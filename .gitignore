@@ -1,0 +1,28 @@
+# Dependencias y entornos
+node_modules/
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+
+# Archivos de entorno y secretos
+.env
+.env.local
+*.log
+
+# Build outputs
+dist/
+build/
+
+# Informes y scripts auxiliares (no subir a GitHub)
+INFORME_ACTIVIDAD_03.docx
+INFORME_ACTIVIDAD_03.pdf
+generate_docx_report.py
+generate_report.py
+generate_html_report.py
