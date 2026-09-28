@@ -20,9 +20,10 @@ __pycache__/
 dist/
 build/
 
-# Informes y scripts auxiliares (no subir a GitHub)
-INFORME_ACTIVIDAD_03.docx
-INFORME_ACTIVIDAD_03.pdf
-generate_docx_report.py
-generate_report.py
-generate_html_report.py
+# Informes binarios generados (subir a plataforma acad?mica UPDS, no en git)
+*.docx
+*.pdf
+generate_*.py
+build_*.py
+test.docx
+test.pdf
