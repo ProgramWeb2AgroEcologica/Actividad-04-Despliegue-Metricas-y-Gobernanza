@@ -27,8 +27,10 @@ export function ProducerDashboardView({
   onDeleteProduct, 
   onUpdateOrderStatus, 
   onResetData, 
-  showToast 
+  showToast,
+  currentUser
 }) {
+  const canEdit = currentUser?.rol === 'productor' || currentUser?.rol === 'administrador';
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'orders'
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -70,6 +72,10 @@ export function ProducerDashboardView({
   const projectedRevenue = orders.reduce((sum, o) => sum + o.total_bs, 0);
 
   const openCreateModal = () => {
+    if (!canEdit) {
+      showToast('ACCESO DENEGADO (403): Tu rol actual es "Consumidor". Cambia a rol "Productor" o "Administrador" en la barra superior para publicar cosechas.', 'error', 'Control RBAC');
+      return;
+    }
     setEditingProduct(null);
     setFormData({
       nombre: '',
@@ -87,6 +93,10 @@ export function ProducerDashboardView({
   };
 
   const openEditModal = (product) => {
+    if (!canEdit) {
+      showToast('ACCESO DENEGADO (403): Tu rol actual es "Consumidor". Cambia a rol "Productor" o "Administrador" para editar cosechas.', 'error', 'Control RBAC');
+      return;
+    }
     setEditingProduct(product);
     setFormData({
       nombre: product.nombre,
@@ -143,6 +153,10 @@ export function ProducerDashboardView({
   };
 
   const handleToggleActive = async (product) => {
+    if (!canEdit) {
+      showToast('ACCESO DENEGADO (403): Solo Productores o Administradores pueden pausar o activar cosechas.', 'error', 'Control RBAC');
+      return;
+    }
     await onUpdateProduct(product.id, { activo: !product.activo });
     showToast(
       product.activo ? `Cosecha "${product.nombre}" pausada temporalmente.` : `Cosecha "${product.nombre}" activada.`,
@@ -152,6 +166,45 @@ export function ProducerDashboardView({
 
   return (
     <div className="max-w-5xl mx-auto py-4 space-y-6">
+      {/* RBAC Security & Role Banner */}
+      {!canEdit ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-100 text-amber-800 shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-amber-950">Modo Solo Lectura (Rol: Consumidor - {currentUser?.email || 'cliente@ecoferia.bo'})</p>
+              <p className="text-[11px] text-amber-800 mt-0.5">
+                Por pol?ticas RBAC del backend, las acciones de creaci?n, modificaci?n y despacho est?n protegidas para Productores y Administradores.
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-bold bg-amber-200/80 text-amber-950 px-3 py-1.5 rounded-xl border border-amber-300">
+            Cambia a Productor/Admin arriba
+          </span>
+        </div>
+      ) : (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-emerald-950">
+                Permisos de Escritura Habilitados ({currentUser?.rol === 'administrador' ? 'Administrador General' : 'Productor Campesino'})
+              </p>
+              <p className="text-[11px] text-emerald-800 mt-0.5">
+                Sesi?n autenticada como <strong>{currentUser?.email}</strong>. Puedes publicar cosechas y gestionar despachos feriales.
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-bold bg-emerald-200 text-emerald-950 px-2.5 py-1 rounded-lg">
+            RBAC: AUTORIZADO
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
