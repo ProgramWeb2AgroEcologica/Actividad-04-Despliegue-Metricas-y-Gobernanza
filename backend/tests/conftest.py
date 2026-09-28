@@ -37,7 +37,7 @@ def ana_auth(app):
         tokens = generar_tokens(
             user_id="11111111-1111-1111-1111-111111111111",
             email="ana@upds.edu.bo",
-            rol="authenticated",
+            rol="productor",
             nombre="Ana García"
         )
     return {
@@ -61,6 +61,63 @@ def beto_auth(app):
     return {
         "user_id": "22222222-2222-2222-2222-222222222222",
         "email": "beto@upds.edu.bo",
+        "tokens": tokens,
+        "headers": {"Authorization": f"Bearer {tokens['access_token']}"}
+    }
+
+
+@pytest.fixture
+def productor_auth(app):
+    """Genera credenciales de prueba con rol de Productor."""
+    with app.app_context():
+        tokens = generar_tokens(
+            user_id="33333333-3333-3333-3333-333333333333",
+            email="productor@ecoferia.bo",
+            rol="productor",
+            nombre="Don Mario Samaipata"
+        )
+    return {
+        "user_id": "33333333-3333-3333-3333-333333333333",
+        "email": "productor@ecoferia.bo",
+        "rol": "productor",
+        "tokens": tokens,
+        "headers": {"Authorization": f"Bearer {tokens['access_token']}"}
+    }
+
+
+@pytest.fixture
+def consumidor_auth(app):
+    """Genera credenciales de prueba con rol de Consumidor."""
+    with app.app_context():
+        tokens = generar_tokens(
+            user_id="44444444-4444-4444-4444-444444444444",
+            email="cliente@ecoferia.bo",
+            rol="consumidor",
+            nombre="Carlos Perez Consumidor"
+        )
+    return {
+        "user_id": "44444444-4444-4444-4444-444444444444",
+        "email": "cliente@ecoferia.bo",
+        "rol": "consumidor",
+        "tokens": tokens,
+        "headers": {"Authorization": f"Bearer {tokens['access_token']}"}
+    }
+
+
+@pytest.fixture
+def admin_auth(app):
+    """Genera credenciales de prueba con rol de Administrador."""
+    with app.app_context():
+        tokens = generar_tokens(
+            user_id="55555555-5555-5555-5555-555555555555",
+            email="admin@ecoferia.bo",
+            rol="administrador",
+            nombre="Admin General"
+        )
+    return {
+        "user_id": "55555555-5555-5555-5555-555555555555",
+        "email": "admin@ecoferia.bo",
+        "rol": "administrador",
         "tokens": tokens,
         "headers": {"Authorization": f"Bearer {tokens['access_token']}"}
     }

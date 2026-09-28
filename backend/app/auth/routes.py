@@ -19,7 +19,30 @@ auth_bp = Blueprint(
 )
 
 # Almacén de usuarios para desarrollo local y tests (con persistencia en memoria)
-_usuarios_db = {}
+# Almacén de usuarios con cuentas pre-sembradas para demostración de roles (RBAC)
+_usuarios_db = {
+    "admin@ecoferia.bo": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "email": "admin@ecoferia.bo",
+        "password": "Admin123!",
+        "nombre": "Administrador EcoFeria",
+        "rol": "administrador"
+    },
+    "productor@ecoferia.bo": {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "email": "productor@ecoferia.bo",
+        "password": "Productor123!",
+        "nombre": "Don Mario Productor Samaipata",
+        "rol": "productor"
+    },
+    "cliente@ecoferia.bo": {
+        "id": "33333333-3333-3333-3333-333333333333",
+        "email": "cliente@ecoferia.bo",
+        "password": "Cliente123!",
+        "nombre": "Carlos Perez Consumidor",
+        "rol": "consumidor"
+    }
+}
 
 @auth_bp.route("/registro", methods=["POST"])
 @auth_bp.arguments(RegistroUsuarioSchema)
@@ -33,6 +56,7 @@ def registrar_usuario(datos):
     email = datos["email"].lower().strip()
     password = datos["password"]
     nombre = datos.get("nombre", "Usuario")
+    rol = datos.get("rol", "consumidor").lower()
 
     # Validación de deduplicación (Concepto evaluado por el docente: Código 409 Conflict)
     if email in _usuarios_db:
@@ -78,10 +102,10 @@ def registrar_usuario(datos):
         "email": email,
         "password": password,
         "nombre": nombre,
-        "rol": "authenticated"
+        "rol": rol
     }
 
-    tokens = generar_tokens(user_id=user_id, email=email, rol="authenticated", nombre=nombre)
+    tokens = generar_tokens(user_id=user_id, email=email, rol=rol, nombre=nombre)
     return tokens, 201
 
 
@@ -121,7 +145,7 @@ def iniciar_sesion(datos):
                         "email": email,
                         "password": password,
                         "nombre": nombre,
-                        "rol": "authenticated"
+                        "rol": rol
                     }
                     usuario = _usuarios_db[email]
                     supabase_autenticado = True

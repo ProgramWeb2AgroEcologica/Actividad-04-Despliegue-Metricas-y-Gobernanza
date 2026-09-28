@@ -11,6 +11,11 @@ class RegistroUsuarioSchema(Schema):
         load_default="Usuario",
         metadata={"description": "Nombre visible o identificador"}
     )
+    rol = fields.String(
+        load_default="consumidor",
+        validate=validate.OneOf(["administrador", "productor", "consumidor", "authenticated"], error="El rol debe ser: administrador, productor o consumidor"),
+        metadata={"description": "Rol de acceso del usuario (administrador, productor, consumidor)"}
+    )
 
 
 class LoginUsuarioSchema(Schema):

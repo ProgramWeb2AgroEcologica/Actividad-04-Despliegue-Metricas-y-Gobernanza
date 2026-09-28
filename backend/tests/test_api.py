@@ -355,3 +355,58 @@ def test_22_ecoforia_cu04_cambio_estado_despacho_ferial(client, ana_auth):
     assert res.status_code == 200
     data = res.get_json()
     assert data["estado"] == "Listo en Feria"
+
+
+
+# ----------------- PRUEBAS DE ROLES Y CONTROL DE ACCESO (RBAC - ACTIVIDAD 04) -----------------
+
+def test_23_rbac_consumidor_denegado_publicar_cosecha_403(client, consumidor_auth):
+    """Prueba 23 (RBAC): Un consumidor ordinario no tiene permiso para publicar cosechas (403 Forbidden)."""
+    res = client.post(
+        "/api/productos",
+        json={
+            "nombre": "Fruta Prohibida Consumidor",
+            "precio": 10.0,
+            "categoria": "Frutas",
+            "comunidad": "Samaipata",
+            "stock": 10,
+            "unidad": "Kg"
+        },
+        headers=consumidor_auth["headers"]
+    )
+    assert res.status_code == 403
+    data = res.get_json()
+    assert "Acceso Prohibido" in data["error"]
+    assert "productor" in data["mensaje"]
+
+
+def test_24_rbac_productor_autorizado_crear_cosecha_201(client, productor_auth):
+    """Prueba 24 (RBAC): Un usuario con rol 'productor' puede publicar exitosamente una nueva cosecha (201 Created)."""
+    res = client.post(
+        "/api/productos",
+        json={
+            "nombre": "Sandia Dulce de Los Negros",
+            "precio": 25.0,
+            "categoria": "Frutas",
+            "comunidad": "Vallegrande",
+            "stock": 30,
+            "unidad": "Unidad"
+        },
+        headers=productor_auth["headers"]
+    )
+    assert res.status_code == 201
+    data = res.get_json()
+    assert data["nombre"] == "Sandia Dulce de Los Negros"
+    assert data["stock"] == 30
+
+
+def test_25_rbac_admin_acceso_total_modificar_despacho_200(client, admin_auth):
+    """Prueba 25 (RBAC): El rol 'administrador' posee acceso total para actualizar cualquier pedido ferial (200 OK)."""
+    res = client.patch(
+        "/api/pedidos/1/estado",
+        json={"estado": "Entregado"},
+        headers=admin_auth["headers"]
+    )
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["estado"] == "Entregado"

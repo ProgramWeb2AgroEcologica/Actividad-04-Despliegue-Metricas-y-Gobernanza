@@ -7,7 +7,7 @@ from app.ecoforia.schemas import (
     PedidoSchema,
     ActualizarEstadoPedidoSchema
 )
-from app.auth.jwt_utils import token_required
+from app.auth.jwt_utils import token_required, requiere_rol
 
 ecoforia_bp = Blueprint(
     "ecoforia",
@@ -69,6 +69,7 @@ def obtener_producto(producto_id):
 
 @ecoforia_bp.route("/productos", methods=["POST"])
 @token_required
+@requiere_rol(["productor", "administrador"])
 @ecoforia_bp.doc(security=[{"BearerAuth": []}])
 @ecoforia_bp.arguments(ProductoSchema)
 @ecoforia_bp.response(201, ProductoSchema)
@@ -83,6 +84,7 @@ def crear_producto(datos):
 
 @ecoforia_bp.route("/productos/<int:producto_id>", methods=["PUT", "PATCH"])
 @token_required
+@requiere_rol(["productor", "administrador"])
 @ecoforia_bp.doc(security=[{"BearerAuth": []}])
 @ecoforia_bp.arguments(ActualizarProductoSchema)
 @ecoforia_bp.response(200, ProductoSchema)
@@ -99,6 +101,7 @@ def actualizar_producto(datos, producto_id):
 
 @ecoforia_bp.route("/productos/<int:producto_id>", methods=["DELETE"])
 @token_required
+@requiere_rol(["productor", "administrador"])
 @ecoforia_bp.doc(security=[{"BearerAuth": []}])
 def eliminar_producto(producto_id):
     """CU-03: Desactiva o elimina una cosecha del catálogo activo (Requiere token)."""
@@ -159,6 +162,7 @@ def listar_pedidos():
 
 @ecoforia_bp.route("/pedidos/<int:pedido_id>/estado", methods=["PUT", "PATCH"])
 @token_required
+@requiere_rol(["productor", "administrador"])
 @ecoforia_bp.doc(security=[{"BearerAuth": []}])
 @ecoforia_bp.arguments(ActualizarEstadoPedidoSchema)
 @ecoforia_bp.response(200, PedidoSchema)

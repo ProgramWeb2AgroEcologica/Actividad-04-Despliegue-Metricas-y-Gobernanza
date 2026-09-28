@@ -160,3 +160,37 @@ def token_required(f):
         return f(*args, **kwargs)
 
     return wrapper
+
+
+def requiere_rol(roles_permitidos):
+    """
+    Decorador @requiere_rol(roles_permitidos):
+    Exige que el usuario autenticado cuente con al menos uno de los roles especificados
+    (ej. 'administrador', 'productor', 'consumidor').
+    Si el usuario no tiene el rol, responde con 403 Forbidden (OWASP API5).
+    """
+    if isinstance(roles_permitidos, str):
+        roles_permitidos = [roles_permitidos]
+
+    def decorador(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            if not hasattr(g, "current_user") or not g.current_user:
+                return jsonify({
+                    "error": "No autorizado",
+                    "mensaje": "Se requiere autenticación previa para verificar permisos de rol"
+                }), 401
+
+            user_rol = str(g.current_user.get("rol", "")).lower()
+            permitidos = [str(r).lower() for r in roles_permitidos]
+
+            if user_rol == "administrador" or user_rol in permitidos:
+                return f(*args, **kwargs)
+
+            return jsonify({
+                "error": "Acceso Prohibido (Forbidden)",
+                "mensaje": f"Permisos insuficientes. Se requiere uno de los roles: {', '.join(roles_permitidos)}. Su rol actual es '{user_rol}'."
+            }), 403
+
+        return wrapper
+    return decorador
