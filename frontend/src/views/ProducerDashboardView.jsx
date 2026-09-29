@@ -15,6 +15,7 @@ import {
   MapPin,
   Eye,
   EyeOff,
+  Key,
   User,
   Image as ImageIcon
 } from 'lucide-react';
@@ -28,7 +29,8 @@ export function ProducerDashboardView({
   onUpdateOrderStatus, 
   onResetData, 
   showToast,
-  currentUser
+  currentUser,
+  onOpenLogin
 }) {
   const canEdit = currentUser?.rol === 'productor' || currentUser?.rol === 'administrador';
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'orders'
@@ -180,9 +182,14 @@ export function ProducerDashboardView({
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-bold bg-amber-200/80 text-amber-950 px-3 py-1.5 rounded-xl border border-amber-300">
-            Cambia a Productor/Admin arriba
-          </span>
+          <button
+            type="button"
+            onClick={() => onOpenLogin && onOpenLogin()}
+            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+          >
+            <Key className="w-3.5 h-3.5" />
+            <span>Iniciar Sesión como Productor</span>
+          </button>
         </div>
       ) : (
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-center justify-between gap-3 shadow-xs">

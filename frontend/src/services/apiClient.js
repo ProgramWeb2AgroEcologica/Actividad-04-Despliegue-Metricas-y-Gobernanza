@@ -119,33 +119,45 @@ export const ApiClient = {
   },
 
   async login(email, password) {
+    const cleanEmail = email.trim();
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: cleanEmail, password })
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.mensaje || `Error de autenticaci?n (${res.status})`);
+        const err = new Error(errorData.mensaje || (res.status === 401 ? 'Credenciales incorrectas (401 Unauthorized).' : `Error de autenticacion (${res.status})`));
+        err.status = res.status;
+        throw err;
       }
 
       const data = await res.json();
-      const user = Object.values(DEMO_ROLES).find(u => u.email.toLowerCase() === email.toLowerCase()) || {
-        id: 'user-' + Date.now(),
-        email,
-        nombre: email.split('@')[0],
-        rol: 'consumidor'
+      const user = Object.values(DEMO_ROLES).find(u => u.email.toLowerCase() === cleanEmail.toLowerCase()) || {
+        id: (data.user && data.user.id) || 'user-' + Date.now(),
+        email: cleanEmail,
+        nombre: (data.user && data.user.nombre) || cleanEmail.split('@')[0],
+        rol: (data.user && data.user.rol) || 'consumidor',
+        badge: 'Consumidor Registrado',
+        badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300'
       };
 
       this.setSession(user, data.access_token);
       return { user, token: data.access_token };
     } catch (err) {
-      console.warn('API de autenticaci?n remota no disponible, usando login simulado:', err.message);
-      const user = Object.values(DEMO_ROLES).find(u => u.email.toLowerCase() === email.toLowerCase()) || DEMO_ROLES.consumidor;
-      this.setSession(user, 'demo-jwt-token-' + user.rol);
-      return { user, token: 'demo-jwt-token-' + user.rol };
+      if (err.status === 401 || err.status === 400 || (err.message && err.message.toLowerCase().includes('credenciales'))) {
+        throw err;
+      }
+
+      console.warn('API remota no respondió, verificando contingencia demo:', err.message);
+      const demoUser = Object.values(DEMO_ROLES).find(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+      if (demoUser && demoUser.password === password) {
+        this.setSession(demoUser, 'demo-jwt-token-' + demoUser.rol);
+        return { user: demoUser, token: 'demo-jwt-token-' + demoUser.rol };
+      }
+      throw err;
     }
   },
 
