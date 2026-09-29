@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensa Actividad 04 - EcoFeria Santa Cruz (UPDS)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --primary-light: #10b981;
+            --accent: #f59e0b;
+            --purple: #7e22ce;
+            --danger: #dc2626;
+            --bg: #090d16;
+            --card-bg: #111827;
+            --border: #1f2937;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Barra de Progreso Superior */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #1e293b;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #f59e0b);
+            width: 12.5%;
+            transition: width 0.3s ease;
+        }
+
+        /* Contenedor Principal de Diapositivas */
+        .slide-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 40px;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Encabezado de Diapositiva */
+        .slide-header {
+            margin-bottom: 24px;
+        }
+        .slide-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-light);
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .slide-title {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+
+        /* Grillas de Contenido */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title.green { color: #34d399; }
+        .card-title.amber { color: #fbbf24; }
+        .card-title.purple { color: #c084fc; }
+        .card-title.red { color: #f87171; }
+
+        .card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card li {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .card li strong {
+            color: #ffffff;
+        }
+        .card li span.bullet {
+            color: var(--primary-light);
+            font-weight: bold;
+        }
+
+        /* Estilo Especial Portada */
+        .cover-box {
+            text-align: center;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .cover-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .cover-title {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 40%, #a7f3d0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .cover-sub {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+        .cover-meta {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+        }
+        .meta-item p { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .meta-item h4 { font-size: 15px; font-weight: 700; color: #ffffff; margin-top: 4px; }
+
+        /* Barra de Navegación Inferior */
+        .nav-bar {
+            height: 60px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .nav-info {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+        }
+        .nav-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary-light);
+        }
+
+        .highlight-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fde047;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        code.mono {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Progreso Superior -->
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Escenario de Diapositivas -->
+    <main class="slide-stage">
+
+        <!-- SLIDE 1: PORTADA -->
+        <section class="slide active" id="slide-1">
+            <div class="cover-box">
+                <span class="cover-badge">Universidad Privada Domingo Savio — Cátedra Ing. Jimmy Requena</span>
+                <h1 class="cover-title">EcoFeria Santa Cruz</h1>
+                <p class="cover-sub">Actividad 04: Despliegue en Producción, Métricas de Sostenibilidad y Plan de Gobernanza</p>
+                <div class="cover-meta">
+                    <div class="meta-item">
+                        <p>Asignatura</p>
+                        <h4>Programación Web II</h4>
+                    </div>
+                    <div class="meta-item">
+                        <p>Pod de Ingeniería</p>
+                        <h4>Eduar Heredia Chávez & Limbert Quispe Osco</h4>
+                    </div>
+                    <div class="meta-item">
+                        <p>Evaluación</p>
+                        <h4>Defensa Final 100%</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: HILO CONDUCTOR -->
+        <section class="slide" id="slide-2">
+            <div class="slide-header">
+                <span class="slide-tag">1. Justificación y Dominio</span>
+                <h2 class="slide-title">Diagnóstico Territorial en Santa Cruz (CIPCA & CAO)</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title red">⚠️ La Problemática Rural Cruceña</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Intermediación Abusiva:</strong> El 68% de los productores agroecológicos carece de venta directa; los intermediarios absorben entre el 30% y 45% del margen neto.</li>
+                        <li><span class="bullet">▸</span> <strong>Pérdida por Calor (> 32 °C):</strong> El 28% de la cosecha de hortalizas se descompone antes de comercializarse por falta de preventa anticipada.</li>
+                        <li><span class="bullet">▸</span> <strong>Brecha Digital Campesina:</strong> Agricultores de Samaipata y El Torno usan smartphones de gama baja con datos móviles limitados.</li>
+                        <li><span class="bullet">▸</span> <strong>Barrera de Entrada:</strong> Apps comerciales tradicionales (> 2 MB) son inoperantes en zonas rurales.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title green">🌱 La Solución de Ingeniería EcoFeria</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Comercialización Directa:</strong> Plataforma web ligera que conecta familias de valles cruceños con consumidores urbanos.</li>
+                        <li><span class="bullet">▸</span> <strong>Reserva Comunitaria Anticipada:</strong> Se cosecha solo lo previamente vendido para evitar desperdicio orgánico.</li>
+                        <li><span class="bullet">▸</span> <strong>Presupuesto de Red &lt; 500 KB:</strong> Carga ultrarrápida incluso en conexiones 3G/4G inestables.</li>
+                        <li><span class="bullet">▸</span> <strong>Costo Operativo Cero (0.00 Bs/mes):</strong> Sostenible para cooperativas comunitarias sin cuotas mensuales.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: CRITERIO 1 - ESTRUCTURA API & BD -->
+        <section class="slide" id="slide-3">
+            <div class="slide-header">
+                <span class="slide-tag">2. Criterio 1: Estructura API y Base de Datos (5 Puntos)</span>
+                <h2 class="slide-title">Arquitectura Backend Modelo y Modular</h2>
+            </div>
+            <div class="grid-3">
+                <div class="card">
+                    <h3 class="card-title green">🏗️ Application Factory</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Patrón create_app():</strong> Desacoplamiento total sin monolitos.</li>
+                        <li><span class="bullet">▸</span> <strong>Blueprints Modulares:</strong></li>
+                        <li><code class="mono">api_auth</code>: JWT, registro y perfiles.</li>
+                        <li><code class="mono">api_tareas</code>: Laboratorio RLS / RBAC.</li>
+                        <li><code class="mono">api_ecoforia</code>: Cosechas y pedidos.</li>
+                        <li><code class="mono">api_salud</code>: Health check en vivo.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title purple">📖 OpenAPI 3.0 / Swagger</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Flask-Smorest:</strong> Contrato interactivo disponible en <code class="mono">/docs</code>.</li>
+                        <li><span class="bullet">▸</span> <strong>Marshmallow Schemas:</strong> Validación estricta y tipado de payloads.</li>
+                        <li><span class="bullet">▸</span> <strong>Botón Bearer Authorize:</strong> Pruebas interactivas con JWT.</li>
+                        <li><span class="bullet">▸</span> <strong>Códigos de Estado REST:</strong> 200, 201, 401, 403, 404, 409.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title amber">🗄️ PostgreSQL Supabase RLS</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Base Relacional Gestionada:</strong> PostgreSQL 15 en la nube.</li>
+                        <li><span class="bullet">▸</span> <strong>Row Level Security (RLS):</strong> Seguridad nativa en el motor SQL.</li>
+                        <li><span class="bullet">▸</span> <strong>Aislamiento de Filas:</strong> Filtrado forzado por <code class="mono">auth.uid() = user_id</code>.</li>
+                        <li><span class="bullet">▸</span> <strong>Persistencia:</strong> Resistencia a reinicios del contenedor Render.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: CRITERIO 2 - SEGURIDAD & RBAC -->
+        <section class="slide" id="slide-4">
+            <div class="slide-header">
+                <span class="slide-tag">3. Criterio 2: Seguridad y Autenticación (5 Puntos)</span>
+                <h2 class="slide-title">Defensa en Profundidad & Aislamiento 403 Comprobable</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title purple">🔐 Protocolo Criptográfico JWT</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Access Token (15 min):</strong> Vida corta para mitigar robo de sesiones.</li>
+                        <li><span class="bullet">▸</span> <strong>Refresh Token (7 días):</strong> Rotación obligatoria según RFC 6749.</li>
+                        <li><span class="bullet">▸</span> <strong>Firma HMAC-SHA256 (HS256):</strong> Verificación de 5 claims obligatorios (<code class="mono">sub</code>, <code class="mono">exp</code>, <code class="mono">iss</code>, <code class="mono">aud</code>, <code class="mono">leeway=10s</code>).</li>
+                        <li><span class="bullet">▸</span> <strong>Deduplicación 409 Conflict:</strong> Bloquea registros de correos ya existentes.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title red">🛡️ Reglas RBAC & 30 Tests Pytest</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Recurso Ajeno = 403 Forbidden:</strong> Beto intenta ver la tarea de Ana $ightarrow$ Denegado inmediatamente con 403 (Consigna de Cátedra).</li>
+                        <li><span class="bullet">▸</span> <strong>Bypass de Superusuario:</strong> Administrador accede a todo con 200 OK.</li>
+                        <li><span class="bullet">▸</span> <strong>Anti-Enumeration:</strong> IDs no encontrados devuelven 404 Not Found.</li>
+                        <li><span class="bullet">▸</span> <strong class="highlight-badge">30 / 30 Tests PASSED en 0.29s:</strong> Cobertura de seguridad verificada con Pytest en el backend.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: DESPLIEGUE & GREEN WEB -->
+        <section class="slide" id="slide-5">
+            <div class="slide-header">
+                <span class="slide-tag">4. Producción Cloud & Green Web Engineering</span>
+                <h2 class="slide-title">Despliegue Distribuido a Costo Cero (0.00 Bs/mes)</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title green">☁️ Infraestructura Cloud Desplegada</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Cloudflare Pages (Frontend):</strong> React SPA alojada en Edge CDN Anycast en 300+ ciudades.</li>
+                        <li><span class="bullet">▸</span> <strong>Regla _redirects:</strong> <code class="mono">/* /index.html 200</code> resolviendo routing SPA sin errores 404.</li>
+                        <li><span class="bullet">▸</span> <strong>Render.com (Backend REST):</strong> Contenedor Linux WSGI con Gunicorn y SSL TLS 1.3 automático.</li>
+                        <li><span class="bullet">▸</span> <strong>Presupuesto: 0.00 Bs/mes:</strong> Tiers gratuitos aprovechados al 100%.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title amber">🍃 Tablero de Sostenibilidad Digital</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Presupuesto de Red:</strong> Límite $\le$ 500 KB | Real: <strong>362 KB (103 KB gzip)</strong>.</li>
+                        <li><span class="bullet">▸</span> <strong>Huella de Carbono:</strong> <strong>0.08 g CO₂ / visita</strong> (Clase A+, Top 5% más limpio de la web mundial).</li>
+                        <li><span class="bullet">▸</span> <strong>Fórmula SWD:</strong> $E = 0.3625	ext{MB} 	imes 0.81	ext{kWh/GB} 	imes 442	ext{gCO}_2/	ext{kWh}$.</li>
+                        <li><span class="bullet">▸</span> <strong>Google Lighthouse:</strong> <strong>100 / 100</strong> en Rendimiento y Accesibilidad.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: GOBERNANZA AI-DLC & POD -->
+        <section class="slide" id="slide-6">
+            <div class="slide-header">
+                <span class="slide-tag">5. Criterio 3: Informe APA 7 y Matriz AI-DLC (5 Puntos)</span>
+                <h2 class="slide-title">Gobernanza AI-DLC y Auditoría Humana Activa</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title purple">🤖 Mitigación de Alucinaciones de la IA</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Falla de Código HTTP:</strong> La IA sugirió 401; el Pod humano corrigió a <strong>403 Forbidden</strong> según el estándar RFC 7231.</li>
+                        <li><span class="bullet">▸</span> <strong>Falla de Enrutamiento SPA:</strong> La IA omitió la reescritura en el Edge; el Pod humano creó <code class="mono">_redirects</code>.</li>
+                        <li><span class="bullet">▸</span> <strong>Falla en Cálculo de Carbono:</strong> La IA usó métricas desactualizadas; el Pod humano aplicó el modelo formal SWD.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title green">👥 Trazabilidad Git & Documentación APA 7</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Ramas de Trabajo Git Flow:</strong></li>
+                        <li><code class="mono">feature/frontend-sostenibilidad-eduar</code> (@SrHeath)</li>
+                        <li><code class="mono">feature/backend-rbac-limbert</code> (@limberdavid)</li>
+                        <li><span class="bullet">▸</span> <strong>Informe Técnico Oficial:</strong> 13 capítulos en formato APA 7ma Edición (disponible en PDF y Word).</li>
+                        <li><span class="bullet">▸</span> <strong>Matriz SLA:</strong> 99.9% Uptime, RTO 15 min, RPO 5 min.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: DESAFÍO CÁTEDRA QR AUTH -->
+        <section class="slide" id="slide-7">
+            <div class="slide-header">
+                <span class="slide-tag" style="color: #fbbf24;">⭐ DESAFÍO ESPECIAL DE CÁTEDRA (EXENCIÓN / DOBLE NOTA)</span>
+                <h2 class="slide-title">Autenticación Passwordless por Código QR con Supabase</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title amber">📱 Arquitectura Zero-Password</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Inspiración UPDS:</strong> Emula la vinculación biométrica de la app universitaria.</li>
+                        <li><span class="bullet">▸</span> <strong>Eliminación de Phishing:</strong> No se tipean contraseñas en la computadora pública.</li>
+                        <li><span class="bullet">▸</span> <strong>Sesiones Efímeras (120 s):</strong> Desktop genera UUID y escucha por WebSockets.</li>
+                        <li><span class="bullet">▸</span> <strong>Validación Biométrica WebAuthn:</strong> Celular valida huella digital y autoriza la sesión en Supabase.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title green">⚙️ Implementación y Evidencia Entregable</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Script DDL Supabase:</strong> <code class="mono">supabase_schema_qr_auth.sql</code> con RLS y triggers de purga.</li>
+                        <li><span class="bullet">▸</span> <strong>Endpoints Flask:</strong> <code class="mono">/api/auth/qr/iniciar</code> y <code class="mono">/api/auth/qr/autorizar</code>.</li>
+                        <li><span class="bullet">▸</span> <strong>Pruebas Pytest:</strong> <code class="mono">test_27</code> y <code class="mono">test_28</code> certificando el handshake.</li>
+                        <li><span class="bullet">▸</span> <strong>UI Interactiva:</strong> Pestaña "Código QR Móvil" en el modal de login con radar láser y simulador biométrico.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: CONCLUSIONES & ENLACES -->
+        <section class="slide" id="slide-8">
+            <div class="slide-header">
+                <span class="slide-tag">6. Resumen Ejecutivo</span>
+                <h2 class="slide-title">Enlaces Oficiales y Demostración en Vivo</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title green">🌐 Enlaces de Producción en Vivo</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Frontend:</strong> <a href="https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev" target="_blank" style="color: #38bdf8;">pages.dev</a></li>
+                        <li><span class="bullet">▸</span> <strong>API Backend:</strong> <a href="https://ecoferia.onrender.com/api" target="_blank" style="color: #38bdf8;">onrender.com/api</a></li>
+                        <li><span class="bullet">▸</span> <strong>Swagger UI:</strong> <a href="https://ecoferia.onrender.com/docs" target="_blank" style="color: #38bdf8;">onrender.com/docs</a></li>
+                        <li><span class="bullet">▸</span> <strong>Repositorio:</strong> <a href="https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza" target="_blank" style="color: #38bdf8;">GitHub Repo</a></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="card-title purple">🏆 Resumen de Cumplimiento (15 / 15 Pts)</h3>
+                    <ul>
+                        <li><span class="bullet">▸</span> <strong>Criterio 1 (5/5):</strong> Arquitectura Application Factory + Supabase RLS.</li>
+                        <li><span class="bullet">▸</span> <strong>Criterio 2 (5/5):</strong> RBAC 403 comprobado y 30 tests Pytest en 0.29s.</li>
+                        <li><span class="bullet">▸</span> <strong>Criterio 3 (5/5):</strong> Informe APA 7 con Matriz AI-DLC y ramas Git activas.</li>
+                        <li><span class="bullet">▸</span> <strong>Desafío Cátedra:</strong> Autenticación QR Supabase implementada.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Barra de Navegación Inferior -->
+    <footer class="nav-bar">
+        <div class="nav-info">
+            <span id="slideCounter">1 / 8</span> | EcoFeria Santa Cruz — UPDS 2026
+        </div>
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="prevSlide()">◀ Anterior</button>
+            <button class="nav-btn" onclick="nextSlide()">Siguiente ▶</button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        function showSlide(index) {
+            if (index < 1) index = 1;
+            if (index > totalSlides) index = totalSlides;
+            currentSlide = index;
+
+            document.querySelectorAll('.slide').forEach((slide, idx) => {
+                slide.classList.toggle('active', (idx + 1) === currentSlide);
+            });
+
+            document.getElementById('slideCounter').textContent = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Navegación por teclado (Flechas y Barra Espaciadora)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F11') {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+        });
+    </script>
+</body>
+</html>
