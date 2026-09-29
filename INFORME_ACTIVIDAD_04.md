@@ -140,7 +140,7 @@ La soluci?n implementa una **arquitectura desacoplada en tres capas (Three-Tier 
 | **Frontend SPA** | Cloudflare Pages | React 19.2 + Vite 8.3 + Tailwind 4.3; compilaci?n est?tica distribuida en la red perimetral Edge. Archivo `_redirects` para SPA routing. | Latencia TTFB < 35 ms en Santa Cruz; soporte HTTP/3 QUIC; compresi?n gzip/brotli. | **0.00 Bs** |
 | **Backend REST API** | Render Cloud Web Service | Contenedor Python 3.11 con Gunicorn; configuraci?n de Blueprints desacoplados (`/api/auth`, `/api/productos`, `/api/pedidos`). | Manejo concurrente de 50+ conexiones simult?neas; reinicio ante ca?das. | **0.00 Bs** |
 | **Persistencia RDBMS** | Supabase Cloud | PostgreSQL 15 relacional con llaves for?neas, restricciones de integridad y pol?ticas RLS habilitadas. | Conexiones mediante pooling pgbouncer; retenci?n de logs y backups. | **0.00 Bs** |
-| **Integraci?n CI/CD** | GitHub Actions | Ejecuci?n autom?tica de bater?a de pruebas (pytest) y disparadores de webhook hacia Render y Cloudflare. | 25 pruebas pasando en < 0.3 segundos previo a cada despliegue. | **0.00 Bs** |
+| **Integraci?n CI/CD** | GitHub Actions | Ejecuci?n autom?tica de bater?a de pruebas (pytest) y disparadores de webhook hacia Render y Cloudflare. | 28 pruebas pasando en < 0.3 segundos previo a cada despliegue. | **0.00 Bs** |
 
 
 ---
@@ -292,7 +292,7 @@ El desarrollo del proyecto se ejecut? bajo la metodolog?a **AI-DLC (AI Software 
 
 ## 8. Certificaci?n de Calidad: Bater?a de Pruebas Automatizadas (Pytest)
 
-La robustez de la API REST y el cumplimiento de las pol?ticas de seguridad se encuentran certificados mediante una bater?a de **25 pruebas automatizadas**, ejecutadas con el framework profesional `pytest`.
+La robustez de la API REST y el cumplimiento de las pol?ticas de seguridad se encuentran certificados mediante una bater?a de **28 pruebas automatizadas**, ejecutadas con el framework profesional `pytest`.
 
 ### 8.1 Resultados de la Ejecuci?n en Consola
 ```text
@@ -301,11 +301,11 @@ platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
 rootdir: D:\Programacion web 2\Actividad_4ackend
 configfile: pytest.ini
 plugins: anyio-4.15.1
-collected 25 items
+collected 28 items
 
 tests	est_api.py .........................                              [100%]
 
-============================= 25 passed in 0.23s ==============================
+============================= 28 passed in 0.23s ==============================
 ```
 
 ### 8.2 Desglose de Pruebas por M?dulo de Seguridad y Negocio
@@ -323,10 +323,18 @@ tests	est_api.py .........................                              [100%]
    - Registro de reserva comunitaria con generaci?n de c?digo ECO-XXXX (CU-02).
    - Descuento autom?tico de existencias en el inventario al confirmar pedidos.
    - Rastreo de pedidos por c?digo o n?mero de celular.
-3. **M?dulo de Control de Acceso Basado en Roles ? RBAC (3 pruebas cr?ticas a?adidas en Actividad 04):**
-   - `test_23_consumidor_no_puede_crear_producto_403`: Comprueba que una cuenta con rol `consumidor` recibe estrictamente un c?digo **HTTP 403 Forbidden** al intentar publicar una cosecha.
-   - `test_24_productor_puede_crear_producto_201`: Certifica que una cuenta con rol `productor` puede publicar cosechas con respuesta exitosa **HTTP 201 Created**.
-   - `test_25_admin_puede_cambiar_estado_pedido_200`: Comprueba que una cuenta con rol `administrador` puede actualizar el estado log?stico de un pedido con respuesta **HTTP 200 OK**.
+3. **M?dulo de Privacidad de Recursos y Aislamiento por Propietario (Pruebas 12, 12b, 12c, 13 y 14):**
+   - `test_12_aislamiento_privacidad_beto_no_ve_tarea_de_ana_403`: Si Beto solicita por ID una tarea/publicaci?n que pertenece a Ana, el sistema **deniega el acceso devolviendo HTTP 403 Forbidden** ("mostrar que no tiene permisos").
+   - `test_12b_admin_puede_acceder_a_tarea_de_cualquier_usuario_200`: Certifica que un usuario con rol `administrador` posee bypass de superusuario para auditar cualquier tarea por ID (200 OK).
+   - `test_12c_solicitud_recurso_inexistente_retorna_404`: Si un recurso realmente no existe en el sistema, devuelve estrictamente 404 Not Found.
+   - `test_13_aislamiento_privacidad_beto_no_puede_actualizar_tarea_de_ana_403`: Beto intenta modificar una publicaci?n ajena y recibe 403 Forbidden.
+   - `test_14_aislamiento_privacidad_beto_no_puede_eliminar_tarea_de_ana_403`: Beto intenta eliminar una publicaci?n ajena y recibe 403 Forbidden.
+
+4. **M?dulo de Control de Acceso Basado en Roles ? RBAC (Pruebas 23 a 26):**
+   - `test_23_rbac_consumidor_denegado_publicar_cosecha_403`: Un consumidor ordinario recibe HTTP 403 Forbidden al intentar publicar cosechas.
+   - `test_24_rbac_productor_autorizado_crear_cosecha_201`: Un usuario con rol `productor` publica cosechas exitosamente (201 Created).
+   - `test_25_rbac_admin_acceso_total_modificar_despacho_200`: Un usuario con rol `administrador` tiene acceso total a modificar estados (200 OK).
+   - `test_26_rbac_publicador_creador_autorizado_publicar_201`: Valida que los roles sin?nimos `publicador` y `creador` cuenten con autorizaci?n plena para publicar en el sistema (201 Created).
 
 ---
 
