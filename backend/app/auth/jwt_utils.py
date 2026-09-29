@@ -184,6 +184,11 @@ def requiere_rol(roles_permitidos):
             user_rol = str(g.current_user.get("rol", "")).lower()
             permitidos = [str(r).lower() for r in roles_permitidos]
 
+            # Soporte de equivalencia entre productor, publicador y creador
+            sinonimos_creador = {"productor", "publicador", "creador"}
+            if any(p in sinonimos_creador for p in permitidos) and user_rol in sinonimos_creador:
+                return f(*args, **kwargs)
+
             if user_rol == "administrador" or user_rol in permitidos:
                 return f(*args, **kwargs)
 

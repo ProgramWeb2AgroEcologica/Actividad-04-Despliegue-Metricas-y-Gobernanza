@@ -14,7 +14,7 @@ tareas_bp = Blueprint(
     "tareas",
     __name__,
     url_prefix="/api/tareas",
-    description="Gestión de tareas (CRUD) protegidas por JWT y Row Level Security (RLS)"
+    description="Gesti?n de tareas y publicaciones (CRUD) protegidas por JWT, Privacidad y Control de Acceso (RBAC)"
 )
 
 
@@ -24,8 +24,8 @@ tareas_bp = Blueprint(
 @tareas_bp.response(200, TareaResponseSchema(many=True))
 def listar_tareas():
     """
-    Lista únicamente las tareas pertenecientes al usuario autenticado.
-    Demuestra la aplicación de Row Level Security (RLS) en tiempo real:
+    Lista ?nicamente las tareas o publicaciones pertenecientes al usuario autenticado.
+    Demuestra la privacidad y aislamiento de datos:
     SELECT * FROM tareas WHERE auth.uid() = user_id;
     """
     user_id = g.current_user["id"]
@@ -63,24 +63,34 @@ def crear_tarea(datos):
 @token_required
 @tareas_bp.doc(security=[{"BearerAuth": []}])
 @tareas_bp.response(200, TareaResponseSchema)
-@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada o ajena al usuario")
+@tareas_bp.alt_response(403, schema=MensajeRespuestaSchema, description="Acceso denegado: el recurso pertenece a otro usuario")
+@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada en el sistema")
 def obtener_tarea(tarea_id):
     """
-    Obtiene una tarea específica por su ID.
-    Seguridad por Diseño (RLS): Si la tarea pertenece a otro usuario (ej. Beto consulta tarea de Ana),
-    la base de datos devuelve 404 (Not Found) en lugar de 403 (Forbidden), evitando la
-    enumeración de identificadores de recursos.
+    Obtiene una tarea espec?fica por su ID.
+    Seguridad, Privacidad y RBAC:
+    - Si la tarea no existe: Retorna 404 (Not Found).
+    - Si la tarea pertenece a otro usuario y el usuario no tiene rol administrador:
+      Deniega el acceso retornando 403 (Forbidden).
+    - Si es el creador/due?o o administrador: Retorna 200 (OK).
     """
     user_id = g.current_user["id"]
+    rol = str(g.current_user.get("rol", "")).lower()
+    es_admin = (rol == "administrador")
     token = g.current_user.get("raw_token")
     repo = get_task_repository(user_token=token)
 
-    tarea = repo.obtener_por_id(tarea_id, user_id)
-    if not tarea:
+    tarea, estado = repo.obtener_por_id_con_autorizacion(tarea_id, user_id, es_admin=es_admin)
+    if estado == "NOT_FOUND":
         return jsonify({
-            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada o no pertenece al usuario autenticado",
+            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada en el sistema",
             "error": "Not Found"
         }), 404
+    elif estado == "FORBIDDEN":
+        return jsonify({
+            "mensaje": f"Acceso denegado (403 Forbidden): No tienes permisos para acceder a esta tarea porque pertenece a otro usuario.",
+            "error": "Forbidden"
+        }), 403
 
     return tarea, 200
 
@@ -90,24 +100,31 @@ def obtener_tarea(tarea_id):
 @tareas_bp.doc(security=[{"BearerAuth": []}])
 @tareas_bp.arguments(ActualizarTareaSchema)
 @tareas_bp.response(200, TareaResponseSchema)
-@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada o ajena al usuario")
+@tareas_bp.alt_response(403, schema=MensajeRespuestaSchema, description="Acceso denegado: el recurso pertenece a otro usuario")
+@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada")
 def actualizar_tarea(datos, tarea_id):
     """
-    Actualiza parcialmente una tarea propia (PATCH).
-    Justificación técnica: Se utiliza PATCH en lugar de PUT para modificar únicamente los
-    campos suministrados (ej. cambiar solo 'completada' a true), sin exigir el reenvío
-    completo de la entidad ni arriesgar sobreescritura accidental.
+    Actualiza parcialmente una tarea (PATCH).
+    Solo el propietario o un administrador tienen autorizaci?n para modificarla.
+    Si pertenece a otro usuario, responde 403 Forbidden.
     """
     user_id = g.current_user["id"]
+    rol = str(g.current_user.get("rol", "")).lower()
+    es_admin = (rol == "administrador")
     token = g.current_user.get("raw_token")
     repo = get_task_repository(user_token=token)
 
-    tarea_actualizada = repo.actualizar_parcial(tarea_id, user_id, datos)
-    if not tarea_actualizada:
+    tarea_actualizada, estado = repo.actualizar_con_autorizacion(tarea_id, user_id, datos, es_admin=es_admin)
+    if estado == "NOT_FOUND":
         return jsonify({
-            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada o no pertenece al usuario",
+            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada",
             "error": "Not Found"
         }), 404
+    elif estado == "FORBIDDEN":
+        return jsonify({
+            "mensaje": f"Acceso denegado (403 Forbidden): No tienes permisos para modificar esta tarea ajena.",
+            "error": "Forbidden"
+        }), 403
 
     return tarea_actualizada, 200
 
@@ -116,21 +133,29 @@ def actualizar_tarea(datos, tarea_id):
 @token_required
 @tareas_bp.doc(security=[{"BearerAuth": []}])
 @tareas_bp.response(200, EliminarTareaResponseSchema)
-@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada o ajena al usuario")
+@tareas_bp.alt_response(403, schema=MensajeRespuestaSchema, description="Acceso denegado: el recurso pertenece a otro usuario")
+@tareas_bp.alt_response(404, schema=MensajeRespuestaSchema, description="Tarea no encontrada")
 def eliminar_tarea(tarea_id):
     """
-    Elimina una tarea propia. Si un usuario intenta eliminar una tarea ajena, recibe 404.
+    Elimina una tarea propia. Si un usuario intenta eliminar una tarea ajena, recibe 403 Forbidden.
     """
     user_id = g.current_user["id"]
+    rol = str(g.current_user.get("rol", "")).lower()
+    es_admin = (rol == "administrador")
     token = g.current_user.get("raw_token")
     repo = get_task_repository(user_token=token)
 
-    exito = repo.eliminar(tarea_id, user_id)
-    if not exito:
+    exito, estado = repo.eliminar_con_autorizacion(tarea_id, user_id, es_admin=es_admin)
+    if estado == "NOT_FOUND":
         return jsonify({
-            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada o no pertenece al usuario",
+            "mensaje": f"Tarea con ID '{tarea_id}' no encontrada",
             "error": "Not Found"
         }), 404
+    elif estado == "FORBIDDEN":
+        return jsonify({
+            "mensaje": f"Acceso denegado (403 Forbidden): No tienes permisos para eliminar esta tarea ajena.",
+            "error": "Forbidden"
+        }), 403
 
     return {
         "mensaje": "Tarea eliminada exitosamente",

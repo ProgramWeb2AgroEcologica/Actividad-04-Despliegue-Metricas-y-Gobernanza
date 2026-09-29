@@ -35,11 +35,25 @@ _usuarios_db = {
         "nombre": "Don Mario Productor Samaipata",
         "rol": "productor"
     },
+    "creador@ecoferia.bo": {
+        "id": "44444444-4444-4444-4444-444444444444",
+        "email": "creador@ecoferia.bo",
+        "password": "Creador123!",
+        "nombre": "Do?a Teodora Publicadora",
+        "rol": "publicador"
+    },
     "cliente@ecoferia.bo": {
         "id": "33333333-3333-3333-3333-333333333333",
         "email": "cliente@ecoferia.bo",
         "password": "Cliente123!",
         "nombre": "Carlos Perez Consumidor",
+        "rol": "consumidor"
+    },
+    "beto@ecoferia.bo": {
+        "id": "55555555-5555-5555-5555-555555555555",
+        "email": "beto@ecoferia.bo",
+        "password": "Beto123!",
+        "nombre": "Beto Usuario Externo",
         "rol": "consumidor"
     }
 }

@@ -183,13 +183,11 @@ def test_11_listar_tareas_usuario_solo_propias(client, ana_auth, beto_auth):
     assert tareas_beto[0]["user_id"] == beto_auth["user_id"]
 
 
-def test_12_aislamiento_rls_beto_no_ve_tarea_de_ana_404(client, ana_auth, beto_auth):
+def test_12_aislamiento_privacidad_beto_no_ve_tarea_de_ana_403(client, ana_auth, beto_auth):
     """
-    Prueba 12 (Pregunta clave de cátedra):
+    Prueba 12 (Requisito de C?tedra - Privacidad y Control de Acceso):
     Beto intenta leer la tarea de Ana mediante GET /api/tareas/<id_Ana>.
-    Debe responder 404 (Not Found) y NO 403 (Forbidden).
-    Razón de seguridad: El Row Level Security hace invisible el registro ajeno;
-    responder 404 previene ataques de enumeración de recursos privados.
+    Debe denegar el acceso devolviendo 403 Forbidden ("mostrar que no tiene permisos").
     """
     crear_res = client.post("/api/tareas", json={
         "titulo": "Tarea confidencial de Ana"
@@ -198,13 +196,33 @@ def test_12_aislamiento_rls_beto_no_ve_tarea_de_ana_404(client, ana_auth, beto_a
 
     # Beto intenta acceder a la tarea de Ana
     res_beto = client.get(f"/api/tareas/{id_tarea_ana}", headers=beto_auth["headers"])
-    assert res_beto.status_code == 404
+    assert res_beto.status_code == 403
     data = res_beto.get_json()
-    assert data["error"] == "Not Found"
+    assert data["error"] == "Forbidden"
+    assert "permisos" in data["mensaje"].lower() or "denegado" in data["mensaje"].lower()
 
 
-def test_13_aislamiento_rls_beto_no_puede_actualizar_tarea_de_ana_404(client, ana_auth, beto_auth):
-    """Prueba 13: Beto intenta modificar con PATCH una tarea ajena y recibe 404."""
+def test_12b_admin_puede_acceder_a_tarea_de_cualquier_usuario_200(client, ana_auth, admin_auth):
+    """Prueba 12b (RBAC Superuser): El rol administrador tiene acceso total a los recursos por ID (200 OK)."""
+    crear_res = client.post("/api/tareas", json={
+        "titulo": "Tarea inspeccionada por Admin"
+    }, headers=ana_auth["headers"])
+    id_tarea_ana = crear_res.get_json()["id"]
+
+    res_admin = client.get(f"/api/tareas/{id_tarea_ana}", headers=admin_auth["headers"])
+    assert res_admin.status_code == 200
+    assert res_admin.get_json()["id"] == id_tarea_ana
+
+
+def test_12c_solicitud_recurso_inexistente_retorna_404(client, ana_auth):
+    """Prueba 12c: Si el recurso realmente no existe en el sistema, responde 404 Not Found."""
+    res = client.get("/api/tareas/00000000-0000-0000-0000-000000000000", headers=ana_auth["headers"])
+    assert res.status_code == 404
+    assert res.get_json()["error"] == "Not Found"
+
+
+def test_13_aislamiento_privacidad_beto_no_puede_actualizar_tarea_de_ana_403(client, ana_auth, beto_auth):
+    """Prueba 13: Beto intenta modificar con PATCH una tarea ajena y recibe 403 Forbidden (Acceso denegado)."""
     crear_res = client.post("/api/tareas", json={
         "titulo": "Tarea intacta de Ana",
         "completada": False
@@ -216,18 +234,20 @@ def test_13_aislamiento_rls_beto_no_puede_actualizar_tarea_de_ana_404(client, an
         json={"completada": True},
         headers=beto_auth["headers"]
     )
-    assert res_beto.status_code == 404
+    assert res_beto.status_code == 403
+    assert res_beto.get_json()["error"] == "Forbidden"
 
 
-def test_14_aislamiento_rls_beto_no_puede_eliminar_tarea_de_ana_404(client, ana_auth, beto_auth):
-    """Prueba 14: Beto intenta borrar con DELETE una tarea ajena y recibe 404."""
+def test_14_aislamiento_privacidad_beto_no_puede_eliminar_tarea_de_ana_403(client, ana_auth, beto_auth):
+    """Prueba 14: Beto intenta borrar con DELETE una tarea ajena y recibe 403 Forbidden (Acceso denegado)."""
     crear_res = client.post("/api/tareas", json={
         "titulo": "Tarea protegida de Ana"
     }, headers=ana_auth["headers"])
     id_tarea_ana = crear_res.get_json()["id"]
 
     res_beto = client.delete(f"/api/tareas/{id_tarea_ana}", headers=beto_auth["headers"])
-    assert res_beto.status_code == 404
+    assert res_beto.status_code == 403
+    assert res_beto.get_json()["error"] == "Forbidden"
 
 
 def test_15_ana_actualiza_parcialmente_su_tarea_patch_200(client, ana_auth):
@@ -410,3 +430,29 @@ def test_25_rbac_admin_acceso_total_modificar_despacho_200(client, admin_auth):
     assert res.status_code == 200
     data = res.get_json()
     assert data["estado"] == "Entregado"
+
+def test_26_rbac_publicador_creador_autorizado_publicar_201(client):
+    """Prueba 26 (RBAC): Un usuario con rol 'publicador' o 'creador' puede publicar cosechas con ?xito (201 Created)."""
+    # Iniciar sesi?n como creador
+    login_res = client.post("/api/auth/login", json={
+        "email": "creador@ecoferia.bo",
+        "password": "Creador123!"
+    })
+    assert login_res.status_code == 200
+    token = login_res.get_json()["access_token"]
+
+    res = client.post(
+        "/api/productos",
+        json={
+            "nombre": "Mandarinas Dulces de Bermejo",
+            "precio": 15.0,
+            "categoria": "Frutas",
+            "comunidad": "El Torno",
+            "stock": 40,
+            "unidad": "Docena"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert res.status_code == 201
+    assert res.get_json()["nombre"] == "Mandarinas Dulces de Bermejo"
+
