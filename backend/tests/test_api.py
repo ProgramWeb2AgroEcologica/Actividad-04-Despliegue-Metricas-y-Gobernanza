@@ -456,3 +456,43 @@ def test_26_rbac_publicador_creador_autorizado_publicar_201(client):
     assert res.status_code == 201
     assert res.get_json()["nombre"] == "Mandarinas Dulces de Bermejo"
 
+
+
+def test_27_qr_auth_desafio_catedra_flujo_completo(client):
+    """Prueba 27 (Desafío Cátedra): Autenticación passwordless de dispositivos por Código QR con Supabase."""
+    # 1. Desktop inicia la sesión QR
+    init_res = client.post("/api/auth/qr/iniciar")
+    assert init_res.status_code == 201
+    init_data = init_res.get_json()
+    session_id = init_data["session_id"]
+    assert init_data["estado"] == "pendiente"
+    assert "qr_url" in init_data
+
+    # 2. Desktop consulta estado inicial (debe ser 'pendiente')
+    poll_res = client.get(f"/api/auth/qr/estado/{session_id}")
+    assert poll_res.status_code == 200
+    assert poll_res.get_json()["estado"] == "pendiente"
+
+    # 3. Dispositivo móvil autoriza con biometría / rol productor
+    auth_res = client.post("/api/auth/qr/autorizar", json={
+        "session_id": session_id,
+        "email": "productor@ecoferia.bo",
+        "rol": "productor"
+    })
+    assert auth_res.status_code == 200
+    assert auth_res.get_json()["estado"] == "autorizado"
+    assert "access_token" in auth_res.get_json()["tokens"]
+
+    # 4. Desktop detecta autorización y obtiene los tokens JWT
+    final_res = client.get(f"/api/auth/qr/estado/{session_id}")
+    assert final_res.status_code == 200
+    final_data = final_res.get_json()
+    assert final_data["estado"] == "autorizado"
+    assert final_data["user"]["rol"] == "productor"
+    assert "access_token" in final_data["tokens"]
+
+
+def test_28_qr_auth_sesion_inexistente_404(client):
+    """Prueba 28 (Desafío Cátedra): Consultar una sesión QR no existente retorna 404 Not Found."""
+    res = client.get("/api/auth/qr/estado/sesion-inexistente-uuid-999")
+    assert res.status_code == 404

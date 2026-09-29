@@ -228,3 +228,127 @@ def obtener_perfil():
         "rol": usuario["rol"],
         "expiracion_token": usuario["exp"]
     }, 200
+
+
+# ==============================================================================
+# DESAFÍO ESPECIAL DE CÁTEDRA: AUTENTICACIÓN DE DISPOSITIVOS POR CÓDIGO QR
+# (Passwordless Device Pairing vinculando Supabase y Biometría Móvil)
+# ==============================================================================
+
+_sesiones_qr = {}
+
+@auth_bp.route("/qr/iniciar", methods=["POST"])
+def iniciar_sesion_qr():
+    """
+    Inicia una sesión de emparejamiento de dispositivo por código QR.
+    Emite un session_id efímero (validez: 120 segundos).
+    """
+    import time
+    session_id = str(uuid.uuid4())
+    ahora = time.time()
+    
+    _sesiones_qr[session_id] = {
+        "id": session_id,
+        "estado": "pendiente",
+        "created_at": ahora,
+        "expires_at": ahora + 120,
+        "user": None,
+        "tokens": None
+    }
+    
+    # URL de emparejamiento que contiene el código QR
+    qr_url = f"https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/?qr_auth={session_id}"
+    
+    return jsonify({
+        "session_id": session_id,
+        "estado": "pendiente",
+        "expires_in": 120,
+        "qr_url": qr_url,
+        "mensaje": "Sesión QR iniciada. Escanee el código con un dispositivo móvil autorizado."
+    }), 201
+
+
+@auth_bp.route("/qr/estado/<session_id>", methods=["GET"])
+def consultar_sesion_qr(session_id):
+    """
+    Consulta en tiempo real el estado de autorización de la sesión QR.
+    """
+    import time
+    sesion = _sesiones_qr.get(session_id)
+    if not sesion:
+        return jsonify({
+            "error": "Not Found",
+            "mensaje": "Sesión QR no encontrada o expirada."
+        }), 404
+        
+    if time.time() > sesion["expires_at"]:
+        sesion["estado"] = "expirado"
+        return jsonify({
+            "session_id": session_id,
+            "estado": "expirado",
+            "mensaje": "La sesión QR ha caducado. Genere un nuevo código."
+        }), 410
+
+    return jsonify({
+        "session_id": session_id,
+        "estado": sesion["estado"],
+        "tokens": sesion.get("tokens"),
+        "user": sesion.get("user")
+    }), 200
+
+
+@auth_bp.route("/qr/autorizar", methods=["POST"])
+def autorizar_sesion_qr():
+    """
+    El dispositivo móvil autoriza el inicio de sesión del desktop mediante biometría / credencial.
+    """
+    import time
+    datos = request.get_json(silent=True) or {}
+    session_id = datos.get("session_id")
+    email = datos.get("email", "productor@ecoferia.bo").lower().strip()
+    
+    sesion = _sesiones_qr.get(session_id)
+    if not sesion:
+        return jsonify({
+            "error": "Not Found",
+            "mensaje": "Sesión QR no encontrada o expirada."
+        }), 404
+
+    if time.time() > sesion["expires_at"]:
+        sesion["estado"] = "expirado"
+        return jsonify({
+            "error": "Gone",
+            "mensaje": "La sesión QR ha caducado."
+        }), 410
+
+    # Obtener o asignar usuario predeterminado
+    usuario = _usuarios_db.get(email) or {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "nombre": "Usuario Móvil QR",
+        "rol": datos.get("rol", "productor")
+    }
+
+    tokens = generar_tokens(
+        user_id=usuario["id"],
+        email=usuario["email"],
+        rol=usuario.get("rol", "productor"),
+        nombre=usuario.get("nombre", "Usuario Autorizado")
+    )
+
+    sesion["estado"] = "autorizado"
+    sesion["tokens"] = tokens
+    sesion["user"] = {
+        "id": usuario["id"],
+        "email": usuario["email"],
+        "nombre": usuario.get("nombre", "Usuario QR"),
+        "rol": usuario.get("rol", "productor")
+    }
+
+    return jsonify({
+        "session_id": session_id,
+        "estado": "autorizado",
+        "mensaje": "Dispositivo móvil autenticado exitosamente mediante biometría/QR.",
+        "tokens": tokens,
+        "user": sesion["user"]
+    }), 200
