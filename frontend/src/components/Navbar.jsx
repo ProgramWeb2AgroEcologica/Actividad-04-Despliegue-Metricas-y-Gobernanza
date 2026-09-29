@@ -24,7 +24,8 @@ export function Navbar({
   onOpenCart, 
   onStartTour,
   currentUser,
-  onSwitchRole
+  onSwitchRole,
+  onOpenLogin
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
@@ -100,6 +101,17 @@ export function Navbar({
 
           {/* Actions: RBAC Role Selector + Tour Button + Cart Button + Mobile Hamburger */}
           <div className="flex items-center gap-2">
+            {/* Bot?n de Login Manual */}
+            <button
+              onClick={onOpenLogin}
+              id="login-btn-trigger"
+              className="flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs"
+              title="Iniciar sesi?n con correo y contrase?a"
+            >
+              <User className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">Login</span>
+            </button>
+
             {/* RBAC Role Selector Dropdown (C?tedra Live Demo) */}
             <div className="relative">
               <button
@@ -145,6 +157,19 @@ export function Navbar({
                         </button>
                       );
                     })}
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        setRoleDropdownOpen(false);
+                        if (onOpenLogin) onOpenLogin();
+                      }}
+                      className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <User className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Iniciar Sesi?n Manual / Credenciales</span>
+                    </button>
                   </div>
                 </div>
               )}

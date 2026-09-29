@@ -7,6 +7,7 @@ import { CheckoutView } from './views/CheckoutView';
 import { OrdersTrackingView } from './views/OrdersTrackingView';
 import { ProducerDashboardView } from './views/ProducerDashboardView';
 import { SustainabilityDashboardView } from './views/SustainabilityDashboardView';
+import { LoginModal } from './components/LoginModal';
 import { ApiClient, DEMO_ROLES } from './services/apiClient';
 import { Sprout, ShieldCheck, Cpu, Leaf } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [currentUser, setCurrentUser] = useState(() => ApiClient.getCurrentUser());
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('ecoferia_cart_v1');
@@ -39,6 +41,24 @@ export default function App() {
 
   const removeToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Manejo de inicio de sesi?n manual (con formulario de correo y contrase?a)
+  const handleManualLogin = async (email, password) => {
+    const { user } = await ApiClient.login(email, password);
+    setCurrentUser(user);
+    return user;
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('ecoferia_auth_user_v4');
+    localStorage.removeItem('ecoferia_auth_token_v4');
+    setCurrentUser({
+      id: 'guest',
+      email: '',
+      rol: 'consumidor',
+      nombre: 'Visitante'
+    });
   };
 
   // Cambio din?mico de rol (RBAC) para defensa en vivo ante el docente
@@ -205,6 +225,7 @@ export default function App() {
         onOpenCart={() => setCartOpen(true)}
         currentUser={currentUser}
         onSwitchRole={handleSwitchRole}
+        onOpenLogin={() => setLoginModalOpen(true)}
         onStartTour={async () => {
           setActiveTab('catalog');
           const { startTourGuide } = await import('./components/TourGuide');
@@ -244,6 +265,7 @@ export default function App() {
 
         {activeTab === 'producer' && (
           <ProducerDashboardView
+            onOpenLogin={() => setLoginModalOpen(true)}
             products={products}
             orders={orders}
             currentUser={currentUser}
@@ -272,6 +294,16 @@ export default function App() {
           setCartOpen(false);
           setActiveTab('checkout');
         }}
+      />
+
+      {/* Modal de Inicio de Sesi?n y Control de Acceso RBAC */}
+      <LoginModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        currentUser={currentUser}
+        onLogin={handleManualLogin}
+        onLogout={handleLogout}
+        showToast={showToast}
       />
 
       {/* Sistema de Notificaciones Toast */}
