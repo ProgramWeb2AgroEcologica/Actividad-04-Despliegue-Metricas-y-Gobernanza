@@ -7,19 +7,6 @@
 
 ---
 
-## 📄 INFORME ACADÉMICO OFICIAL (PÁGINA HTML RENDERIZADA)
-
-> 💡 **¿Por qué GitHub muestra el código al hacer clic en un archivo `.html`?**  
-> GitHub es un repositorio de código fuente y, por políticas de seguridad contra secuencias de comandos (XSS), muestra el texto con números de línea en lugar de renderizar la web.  
-> **Para ver el informe como una página web interactiva con todos sus estilos, gráficos y tipografías, haz clic en cualquiera de estos enlaces directos:**
-
-- 🌐 **[Ver Informe Web Renderizado en Vivo (Cloudflare Pages)](https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04.html)** *(Recomendado: Carga instantánea en CDN)*
-- 🚀 **[Ver Informe Web Renderizado (Visor HTML GitHubPreview)](https://htmlpreview.github.io/?https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza/blob/main/INFORME_ACTIVIDAD_04.html)**
-- ⚡ **[Ver Informe Web Renderizado (CDN Raw.githack)](https://raw.githack.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza/main/INFORME_ACTIVIDAD_04.html)**
-- 💻 **En tu PC local:** Abre el archivo `INFORME_ACTIVIDAD_04.html` con doble clic desde tu explorador de archivos en Google Chrome, Microsoft Edge o Mozilla Firefox.
-
----
-
 ## 👥 Pod de Ingeniería y Distribución de Ramas en Git
 
 | Integrante | Rol en el Pod | Rama de Trabajo en GitHub | Commits y Aportes Principales |
@@ -37,6 +24,8 @@
   [https://ecoferia.onrender.com/api](https://ecoferia.onrender.com/api)
 - **Documentación Interactiva OpenAPI / Swagger UI:**  
   [https://ecoferia.onrender.com/api/docs](https://ecoferia.onrender.com/api/docs)
+- **Informe Académico Oficial (HTML en Producción):**  
+  [https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04](https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04)
 - **Repositorio Oficial de la Organización en GitHub:**  
   [https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza](https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza)
 
