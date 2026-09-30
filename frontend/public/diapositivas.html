@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensa de Despliegue en la Nube — Actividad 04 | UPDS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --primary-light: #10b981;
+            --accent: #f59e0b;
+            --blue: #0284c7;
+            --purple: #7e22ce;
+            --danger: #dc2626;
+            --bg: #090d16;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Barra de Progreso Superior */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #1e293b;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #0284c7, #f59e0b);
+            width: 10%;
+            transition: width 0.3s ease;
+        }
+
+        /* Escenario de Diapositivas */
+        .slide-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1240px;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Encabezados */
+        .slide-header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .badge-cat {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-light);
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .slide-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--accent);
+            background: rgba(245, 158, 11, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Grillas y Tarjetas */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .card-header.emerald { color: #34d399; }
+        .card-header.blue { color: #38bdf8; }
+        .card-header.amber { color: #fbbf24; }
+        .card-header.purple { color: #c084fc; }
+
+        .card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card li {
+            font-size: 0.92rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .card li::before {
+            content: "•";
+            color: var(--primary-light);
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        /* Código y Snippets */
+        .code-box {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #a7f3d0;
+            overflow-x: auto;
+            line-height: 1.4;
+        }
+
+        /* Métricas */
+        .metric-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        /* Portada Especial */
+        .hero-slide {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #6ee7b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .hero-sub {
+            font-size: 1.35rem;
+            color: #94a3b8;
+            margin-bottom: 28px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Barra de Control Inferior */
+        .control-bar {
+            height: 64px;
+            background: #0d131f;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .pod-info {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 16px;
+        }
+        .pod-info strong {
+            color: #e2e8f0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: #1e293b;
+            color: #ffffff;
+            border: 1px solid #334155;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+            color: #090d16;
+            border-color: var(--primary-light);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Modo Imprimir / PDF */
+        @media print {
+            body {
+                overflow: visible !important;
+                height: auto !important;
+                background: white !important;
+                color: black !important;
+            }
+            .progress-bar-container, .control-bar {
+                display: none !important;
+            }
+            .slide-stage {
+                display: block !important;
+                padding: 0 !important;
+            }
+            .slide {
+                display: block !important;
+                page-break-after: always;
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                background: white !important;
+                color: black !important;
+                margin-bottom: 20px;
+            }
+            .card {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #0f172a !important;
+            }
+            .card li {
+                color: #334155 !important;
+            }
+            .slide-title {
+                color: #064e3b !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Progreso Superior -->
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Escenario Principal -->
+    <main class="slide-stage">
+
+        <!-- DIAPOSITIVA 1: PORTADA -->
+        <section class="slide hero-slide active" data-index="1">
+            <span class="badge-cat">UNIVERSIDAD PRIVADA DOMINGO SAVIO — PROGRAMACIÓN WEB II</span>
+            <h1 class="hero-title">EcoFeria Santa Cruz — Actividad 04</h1>
+            <p class="hero-sub">Despliegue Completo en la Nube (Render, Supabase y Cloudflare Pages), Tablero Green Web y Plan de Gobernanza</p>
+            
+            <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 30px; flex-wrap: wrap;">
+                <span class="metric-badge">🌐 100% Jamstack Microservicios</span>
+                <span class="metric-badge">💰 Costo Operativo: 0.00 Bs / mes</span>
+                <span class="metric-badge">⚡ Edge CDN Global (< 50 ms)</span>
+                <span class="metric-badge">🍃 Lighthouse 100/100</span>
+            </div>
+
+            <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid #334155; border-radius: 12px; padding: 16px; max-width: 650px; margin: 0 auto; text-align: left; font-size: 0.88rem;">
+                <div style="color: #34d399; font-weight: bold; margin-bottom: 4px;">👥 Pod de Desarrollo e Ingeniería:</div>
+                <div style="display: flex; justify-content: space-between; color: #e2e8f0;">
+                    <span>• <strong>Eduar Heredia Chávez</strong> (Frontend & Green Web)</span>
+                    <span style="color: #94a3b8;">feature/frontend-sostenibilidad-eduar</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: #e2e8f0; margin-top: 4px;">
+                    <span>• <strong>Limbert David Quispe Osco</strong> (Backend & RBAC)</span>
+                    <span style="color: #94a3b8;">feature/backend-rbac-limbert</span>
+                </div>
+                <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 6px; color: #94a3b8; font-size: 0.8rem;">
+                    Docente: <strong>Ing. Jimmy Requena</strong> | Carrera de Ingeniería en Sistemas (2026)
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 2: ARQUITECTURA DE 3 CAPAS -->
+        <section class="slide" data-index="2">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">INFRAESTRUCTURA CLOUD</span>
+                    <h2 class="slide-title">1. Arquitectura Jamstack de 3 Capas Desacopladas</h2>
+                </div>
+                <span class="slide-number">02 / 10</span>
+            </div>
+
+            <div class="grid-3">
+                <div class="card" style="border-top: 4px solid #10b981;">
+                    <div class="card-header emerald">🗄️ Capa 1: Base de Datos</div>
+                    <div style="font-weight: bold; color: #f8fafc; font-size: 1.05rem;">Supabase Cloud</div>
+                    <ul>
+                        <li>PostgreSQL 15 gestionado en la nube.</li>
+                        <li>Políticas de aislamiento por fila <strong>(RLS)</strong>.</li>
+                        <li>Tablas: tareas, productores, productos, pedidos y auth_qr_sesiones.</li>
+                        <li><strong>Supabase Realtime (WebSockets)</strong> para sincronización instantánea con smartphones.</li>
+                        <li>Región: South America (São Paulo).</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="border-top: 4px solid #0284c7;">
+                    <div class="card-header blue">⚙️ Capa 2: Backend REST API</div>
+                    <div style="font-weight: bold; color: #f8fafc; font-size: 1.05rem;">Render Cloud</div>
+                    <ul>
+                        <li>Microservicio REST modular en <strong>Python 3 + Flask</strong>.</li>
+                        <li>Servidor WSGI de grado productivo <strong>Gunicorn</strong>.</li>
+                        <li>Documentación interactiva OpenAPI / Swagger UI en <code>/api/docs</code>.</li>
+                        <li>Control de acceso RBAC con decoradores <code>@requiere_rol</code>.</li>
+                        <li>Resiliencia ante arranque en frío (Cold-Start).</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="border-top: 4px solid #f59e0b;">
+                    <div class="card-header amber">🌐 Capa 3: Frontend SPA</div>
+                    <div style="font-weight: bold; color: #f8fafc; font-size: 1.05rem;">Cloudflare Pages</div>
+                    <ul>
+                        <li>Single Page Application construida en <strong>React 19 + Vite</strong>.</li>
+                        <li>Alojamiento sobre <strong>Edge CDN Global</strong> (< 50 ms).</li>
+                        <li>Regla de enrutamiento SPA en <code>_redirects</code> (<code>/* /index.html 200</code>).</li>
+                        <li>Presupuesto ultraligero: <strong>104.8 KB gzip</strong> (< 500 KB meta).</li>
+                        <li>Costo de hosting: <strong>0.00 Bs / mes</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 3: DESPLIEGUE EN SUPABASE -->
+        <section class="slide" data-index="3">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">PASO 1 — PERSISTENCIA & SEGURIDAD</span>
+                    <h2 class="slide-title">2. Despliegue de la Base de Datos en Supabase Cloud</h2>
+                </div>
+                <span class="slide-number">03 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header emerald">📝 Ejecución DDL y Seguridad RLS</div>
+                    <ul>
+                        <li><strong>1. Creación del Proyecto:</strong> En Supabase Dashboard con región São Paulo para menor latencia en Bolivia.</li>
+                        <li><strong>2. Script Principal (<code>01_schema_rls.sql</code>):</strong> Crea tablas feriales y habilita RLS restringiendo consultas por <code>auth.uid() = user_id</code>.</li>
+                        <li><strong>3. Script QR Móvil (<code>supabase_schema_qr_auth.sql</code>):</strong> Tabla <code>auth_qr_sesiones</code> con TTL de 120s y función de purga automática.</li>
+                        <li><strong>4. Habilitación de Realtime:</strong> Se añade la tabla a la publicación de WebSockets:
+                            <div class="code-box">ALTER PUBLICATION supabase_realtime ADD TABLE public.auth_qr_sesiones;</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header blue">🔑 Credenciales Extraídas para el Backend</div>
+                    <ul>
+                        <li><strong>Project URL:</strong> Endpoint HTTPS del cluster PostgreSQL:
+                            <div class="code-box">https://&lt;id-proyecto&gt;.supabase.co</div>
+                        </li>
+                        <li><strong>anon public key:</strong> Clave pública con permisos regulados por RLS para clientes frontend.</li>
+                        <li><strong>service_role secret:</strong> Token administrativo con bypass RLS inyectado de forma segura en Render.</li>
+                        <li><strong>JWT Secret:</strong> Clave simétrica de 64 caracteres utilizada para firmar y validar tokens de sesión Bearer.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 4: DESPLIEGUE EN RENDER -->
+        <section class="slide" data-index="4">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">PASO 2 — SERVICIOS WEB</span>
+                    <h2 class="slide-title">3. Despliegue del Backend REST API en Render Cloud</h2>
+                </div>
+                <span class="slide-number">04 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header blue">⚙️ Configuración del Web Service</div>
+                    <ul>
+                        <li><strong>Repositorio:</strong> Vinculación directa con GitHub para despliegue continuo (CI/CD).</li>
+                        <li><strong>Root Directory:</strong> <code>backend</code> <em>(Crítico para ubicar requirements.txt)</em>.</li>
+                        <li><strong>Runtime:</strong> Python 3 sobre plan Free Tier (0.00 Bs).</li>
+                        <li><strong>Build Command:</strong>
+                            <div class="code-box">pip install -r requirements.txt</div>
+                        </li>
+                        <li><strong>Start Command:</strong>
+                            <div class="code-box">gunicorn "app:create_app()"</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header amber">🔒 Variables de Entorno y Verificación</div>
+                    <ul>
+                        <li><code>FLASK_ENV = production</code></li>
+                        <li><code>SUPABASE_URL = https://&lt;id&gt;.supabase.co</code></li>
+                        <li><code>SUPABASE_KEY = &lt;anon_public_key&gt;</code></li>
+                        <li><code>SUPABASE_SECRET_KEY = &lt;service_role_secret&gt;</code></li>
+                        <li><code>SUPABASE_JWT_SECRET = &lt;frase_secreta_jwt&gt;</code></li>
+                        <li><code>CORS_ORIGINS = *</code> (Permite peticiones desde Cloudflare Pages).</li>
+                        <li><strong>Health Check Verificado:</strong> <code>GET /api/salud</code> responde <code>{"estado": "ok"}</code>.</li>
+                        <li><strong>Swagger UI Operativo:</strong> <code>GET /api/docs</code> expone los 30 endpoints.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 5: DESPLIEGUE EN CLOUDFLARE PAGES -->
+        <section class="slide" data-index="5">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">PASO 3 — FRONTEND DISTRIBUIDO</span>
+                    <h2 class="slide-title">4. Despliegue del Frontend React en Cloudflare Pages</h2>
+                </div>
+                <span class="slide-number">05 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header amber">⚡ Parámetros de Compilación en Vite</div>
+                    <ul>
+                        <li><strong>Conexión Git:</strong> Integración continua conectada a la rama <code>main</code>.</li>
+                        <li><strong>Framework Preset:</strong> Vite (React 19 + Tailwind CSS).</li>
+                        <li><strong>Root Directory:</strong> <code>frontend</code> <em>(Aisla la compilación de la SPA)</em>.</li>
+                        <li><strong>Build Command:</strong> <code>npm run build</code></li>
+                        <li><strong>Build Output Directory:</strong> <code>dist</code></li>
+                        <li><strong>Variable de Entorno:</strong>
+                            <div class="code-box">VITE_API_URL = https://ecoferia.onrender.com/api</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header purple">🌐 Enrutamiento SPA & Alojamiento de Informe</div>
+                    <ul>
+                        <li><strong>Regla SPA en <code>_redirects</code>:</strong>
+                            <div class="code-box">/INFORME_ACTIVIDAD_04  /INFORME_ACTIVIDAD_04.html  200<br>/*                     /index.html                 200</div>
+                        </li>
+                        <li><strong>Solución al Error 404:</strong> Garantiza que al recargar la página o al escanear el QR móvil con parámetros (<code>?qr_auth=...</code>), Cloudflare no dé 404 sino que entregue la SPA.</li>
+                        <li><strong>Alojamiento de Informe HTML:</strong> Ubicado en <code>frontend/public/</code>, se publica renderizado directamente en la nube.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 6: PIPELINE CI/CD -->
+        <section class="slide" data-index="6">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">DEVOPS & GOBERNANZA</span>
+                    <h2 class="slide-title">5. Pipeline CI/CD Automatizado con GitHub</h2>
+                </div>
+                <span class="slide-number">06 / 10</span>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header emerald">1. Push Local</div>
+                    <ul>
+                        <li>El desarrollador ejecuta <code>git push origin main</code>.</li>
+                        <li>Código validado con 30 pruebas Pytest aprobadas localmente.</li>
+                        <li>Commits atómicos documentados con estándar convencional.</li>
+                    </ul>
+                    <div class="code-box">git push origin main</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header blue">2. Webhooks & Build</div>
+                    <ul>
+                        <li>GitHub emite webhooks instantáneos a Render y Cloudflare.</li>
+                        <li>Render compila dependencias Python e inicia Gunicorn.</li>
+                        <li>Cloudflare descarga módulos de Node y ejecuta <code>vite build</code>.</li>
+                    </ul>
+                    <div class="code-box">Webhook ➔ Render & Cloudflare</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header amber">3. Zero-Downtime</div>
+                    <ul>
+                        <li>Actualización en caliente sin interrupción de servicio.</li>
+                        <li>Purga automática de caché perimetral en la CDN global.</li>
+                        <li>Costo de pipeline CI/CD: <strong>0.00 Bs</strong>.</li>
+                    </ul>
+                    <div class="code-box">Status: 200 Live Production</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 7: DESAFÍO QR MÓVIL -->
+        <section class="slide" data-index="7">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">DESAFÍO ESPECIAL DE CÁTEDRA</span>
+                    <h2 class="slide-title">6. Login Passwordless por Código QR en la Nube</h2>
+                </div>
+                <span class="slide-number">07 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header emerald">📲 Flujo Criptográfico Multi-Dispositivo</div>
+                    <ul>
+                        <li><strong>1. Desktop:</strong> Abre pestaña "QR Móvil" en el modal. Invoca <code>POST /api/auth/qr/iniciar</code> generando un <code>session_id</code> efímero de 120 segundos.</li>
+                        <li><strong>2. Cámara Móvil:</strong> El docente escanea el QR apuntando a:<br>
+                            <code>https://...pages.dev/?qr_auth=&lt;id&gt;</code>
+                        </li>
+                        <li><strong>3. Autorización:</strong> El smartphone detecta el parámetro, presenta selector de identidad y botón <strong>"AUTORIZAR CON HUELLA"</strong>.</li>
+                        <li><strong>4. Sincronización en &lt; 1 ms:</strong> La computadora recibe la notificación mediante <strong>Supabase Realtime</strong> y obtiene su JWT sin tipear contraseña.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header purple">🛡️ Resiliencia y Modo Demostración Rápida</div>
+                    <ul>
+                        <li><strong>Sincronización Tripartita:</strong> BroadcastChannel (entre pestañas) + WebSockets Realtime en Supabase + Sondeo HTTP de respaldo.</li>
+                        <li><strong>Botón Cátedra:</strong> Incluye botón <strong>"Abrir Simulador Móvil"</strong> para realizar la defensa oral en 1 sola computadora con dos pestañas.</li>
+                        <li><strong>Botones 1-Clic:</strong> "Huella Productor" y "Huella Admin" para validación instantánea ante el tribunal.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 8: RBAC Y SEGURIDAD -->
+        <section class="slide" data-index="8">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">CONTROL DE ACCESO Y PRIVACIDAD</span>
+                    <h2 class="slide-title">7. Matriz de Roles (RBAC) y Seguridad RLS</h2>
+                </div>
+                <span class="slide-number">08 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header blue">👥 Matriz RBAC Pre-sembrada (0 ms)</div>
+                    <ul>
+                        <li><strong>Consumidor (<code>cliente@ecoferia.bo</code>):</strong> Catálogo y reservas. Recibe <strong>HTTP 403 Forbidden</strong> si intenta publicar cosechas o editar pedidos.</li>
+                        <li><strong>Productor (<code>productor@ecoferia.bo</code>):</strong> Publica cosechas (<strong>201 Created</strong>), actualiza existencias y despacha.</li>
+                        <li><strong>Administrador (<code>admin@ecoferia.bo</code>):</strong> Control total, métricas de gobernanza y auditoría general.</li>
+                        <li><strong>Control Externo (<code>beto@ecoferia.bo</code>):</strong> Aislamiento estricto: no puede ver ni modificar tareas de Ana (<strong>403</strong>).</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header emerald">🔐 Arquitectura de Doble Barrera</div>
+                    <ul>
+                        <li><strong>Barrera 1 (Flask API):</strong> Decorador <code>@requiere_rol</code> valida el token JWT Bearer antes de ejecutar la lógica del controlador.</li>
+                        <li><strong>Barrera 2 (PostgreSQL RLS):</strong> La base de datos impone cláusulas <code>USING (auth.uid() = user_id)</code> en motor nativo.</li>
+                        <li><strong>Rotación de Tokens:</strong> Tokens de acceso cortos (15 min) + Refresh tokens seguros (7 días).</li>
+                        <li><strong>Deduplicación:</strong> Registro de emails repetidos responde con <strong>HTTP 409 Conflict</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 9: CERTIFICACIÓN PYTEST -->
+        <section class="slide" data-index="9">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">CONTROL DE CALIDAD AUTOMATIZADO</span>
+                    <h2 class="slide-title">8. Certificación de Calidad: 30 Tests Pytest</h2>
+                </div>
+                <span class="slide-number">09 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header emerald">🧪 Cobertura del 100% de Requerimientos</div>
+                    <ul>
+                        <li><strong>Tests 01-02:</strong> Verificación de salud y Swagger UI OpenAPI.</li>
+                        <li><strong>Tests 03-09:</strong> Autenticación JWT, deduplicación 409 y rotación de tokens.</li>
+                        <li><strong>Tests 10-16:</strong> Aislamiento por propietario: Beto bloqueado con 403.</li>
+                        <li><strong>Tests 17-18:</strong> Especificación OpenAPI JSON y documentación Smorest.</li>
+                        <li><strong>Tests 19-22:</strong> Casos de uso feriales (CU-01 a CU-04).</li>
+                        <li><strong>Tests 23-26:</strong> Matriz RBAC (Consumidor 403, Productor 201, Admin 200).</li>
+                        <li><strong>Tests 27-30:</strong> Flujo completo de autorización y expiración QR.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header amber">📊 Resultado de la Batería Automatizada</div>
+                    <div class="code-box" style="font-size: 0.95rem; text-align: center; color: #34d399; padding: 18px;">
+                        ================ 30 passed in 0.32s ================
+                    </div>
+                    <ul>
+                        <li><strong>Evidencia Fotográfica:</strong> Captura incorporada en la raíz del repositorio (<code>pystest.jpeg</code>).</li>
+                        <li><strong>Integración en CI/CD:</strong> Garantía de no regresión antes de publicar cambios a la nube.</li>
+                        <li><strong>Velocidad de Ejecución:</strong> 30 tests unitarios en apenas 320 milisegundos.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 10: GREEN WEB & ENLACES -->
+        <section class="slide" data-index="10">
+            <div class="slide-header">
+                <div>
+                    <span class="badge-cat">SOSTENIBILIDAD & ENLACES DE PRODUCCIÓN</span>
+                    <h2 class="slide-title">9. Auditoría Green Web y Enlaces Oficiales</h2>
+                </div>
+                <span class="slide-number">10 / 10</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header emerald">🍃 Métricas de Sostenibilidad Digital</div>
+                    <ul>
+                        <li><strong>Presupuesto de Red:</strong> Bundle comprimido en <strong>104.8 KB gzip</strong> <em>(Meta docente &lt; 500 KB, 79% de ahorro)</em>.</li>
+                        <li><strong>Huella de Carbono:</strong> <strong>0.08 g CO2 / visita</strong> <em>(Meta docente &lt; 0.20 g CO2, 83% más limpio)</em>.</li>
+                        <li><strong>Google Lighthouse:</strong> <strong>100/100 Rendimiento</strong>, 100 Accesibilidad, 100 Buenas Prácticas y 100 SEO.</li>
+                        <li><strong>Costo de Infraestructura:</strong> <strong>0.00 Bs / mes</strong> (Free Tiers perpetuos de Cloudflare, Render y Supabase).</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header blue">🔗 Enlaces en Vivo para la Defensa Oral</div>
+                    <ul style="font-size: 0.88rem;">
+                        <li><strong>Frontend (Cloudflare Pages):</strong><br>
+                            <a href="https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev" target="_blank" style="color: #38bdf8;">https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev</a>
+                        </li>
+                        <li><strong>Backend API REST (Render):</strong><br>
+                            <a href="https://ecoferia.onrender.com/api" target="_blank" style="color: #38bdf8;">https://ecoferia.onrender.com/api</a>
+                        </li>
+                        <li><strong>Swagger UI OpenAPI:</strong><br>
+                            <a href="https://ecoferia.onrender.com/api/docs" target="_blank" style="color: #38bdf8;">https://ecoferia.onrender.com/api/docs</a>
+                        </li>
+                        <li><strong>Informe Académico HTML:</strong><br>
+                            <a href="https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04" target="_blank" style="color: #34d399;">...pages.dev/INFORME_ACTIVIDAD_04</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Barra de Control Inferior -->
+    <footer class="control-bar">
+        <div class="pod-info">
+            <span>UPDS — Programación Web II</span>
+            <span>|</span>
+            <span>Pod: <strong>Eduar Heredia & Limbert Quispe</strong></span>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn" id="prevBtn" onclick="prevSlide()">◀ Anterior</button>
+            <span id="counter" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #94a3b8; min-width: 60px; text-align: center;">1 / 10</span>
+            <button class="btn" id="nextBtn" onclick="nextSlide()">Siguiente ▶</button>
+            <button class="btn" onclick="toggleFullScreen()" title="Pantalla Completa (F)">⛶ Pantalla Completa</button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 10;
+
+        function showSlide(index) {
+            if (index < 1) index = 1;
+            if (index > totalSlides) index = totalSlides;
+            currentSlide = index;
+
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            const activeSlide = document.querySelector(`.slide[data-index="${currentSlide}"]`);
+            if (activeSlide) {
+                activeSlide.classList.add('active');
+            }
+
+            document.getElementById('counter').innerText = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error al activar pantalla completa: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Navegación por Teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullScreen();
+            } else if (e.key === 'Home') {
+                showSlide(1);
+            } else if (e.key === 'End') {
+                showSlide(totalSlides);
+            }
+        });
+
+        // Soporte Táctil (Swipe en Smartphones)
+        let touchstartX = 0;
+        let touchendX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            if (touchendX < touchstartX - 50) nextSlide();
+            if (touchendX > touchstartX + 50) prevSlide();
+        });
+
+        // Inicializar
+        showSlide(1);
+    </script>
+</body>
+</html>

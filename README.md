@@ -26,6 +26,8 @@
   [https://ecoferia.onrender.com/api/docs](https://ecoferia.onrender.com/api/docs)
 - **Informe Académico Oficial (HTML en Producción):**  
   [https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04](https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04)
+- **Diapositivas de Defensa (HTML Interactivo en Producción):**  
+  [https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/diapositivas](https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/diapositivas)
 - **Repositorio Oficial de la Organización en GitHub:**  
   [https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza](https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza)
 
