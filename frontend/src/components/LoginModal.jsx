@@ -39,6 +39,12 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
   const [regPassword, setRegPassword] = useState('');
   const [regRol, setRegRol] = useState('consumidor'); // 'consumidor' | 'productor'
   const [regLoading, setRegLoading] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState(() => ApiClient.getAllAvailableUsers());
+  useEffect(() => {
+    if (isOpen) {
+      setAvailableUsers(ApiClient.getAllAvailableUsers());
+    }
+  }, [isOpen]);
 
   // Estado para Código QR
   const [qrSessionId, setQrSessionId] = useState('');
@@ -50,6 +56,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
   const [qrCopied, setQrCopied] = useState(false);
 
   // Iniciar sesión QR y configurar listener en tiempo real (Broadcast + Storage + Polling)
+  // Iniciar sesion QR y configurar listener en tiempo real (Broadcast + Storage + Supabase Polling)
   useEffect(() => {
     let timer = null;
     let pollInterval = null;
@@ -62,8 +69,35 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
       setQrCountdown(120);
       setQrImageDataUrl('');
 
+      let activeSessionId = fallbackId;
+
+      // 1. Escuchar evento de BroadcastChannel (Cross-tab en el mismo navegador)
+      if (window.BroadcastChannel) {
+        try {
+          bc = new BroadcastChannel('ecoferia_qr_channel');
+          bc.onmessage = (event) => {
+            if (event.data && (event.data.session_id === activeSessionId || event.data.session_id === fallbackId) && event.data.estado === 'autorizado') {
+              handleQrSuccess(event.data.user, event.data.tokens ? event.data.tokens.access_token : null);
+            }
+          };
+        } catch (_) {}
+      }
+
+      // 2. Escuchar evento de localStorage (Cross-tab en el mismo navegador)
+      const handleStorageEvent = (e) => {
+        if ((e.key === 'ecoferia_qr_approved_' + activeSessionId || e.key === 'ecoferia_qr_approved_' + fallbackId) && e.newValue) {
+          try {
+            const data = JSON.parse(e.newValue);
+            handleQrSuccess(data.user, data.tokens ? data.tokens.access_token : null);
+          } catch (_) {}
+        }
+      };
+      window.addEventListener('storage', handleStorageEvent);
+
+      // Iniciar sesion en Supabase y comenzar polling en tiempo real
       ApiClient.iniciarQrSession(fallbackId).then((initData) => {
         const activeId = initData?.session_id || fallbackId;
+        activeSessionId = activeId;
         const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
         const targetBase = isLocal ? 'https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev' : window.location.origin;
         const fullUrl = targetBase + '/?qr_auth=' + activeId;
@@ -80,48 +114,26 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
         }).catch(() => {
           setQrImageDataUrl('https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=064e3b&data=' + encodeURIComponent(fullUrl));
         });
-      }).catch(() => {});
-      const sessionId = fallbackId;
 
-      // 2. Escuchar evento de BroadcastChannel (Cross-tab)
-      if (window.BroadcastChannel) {
-        try {
-          bc = new BroadcastChannel('ecoferia_qr_channel');
-          bc.onmessage = (event) => {
-            if (event.data && event.data.session_id === sessionId && event.data.estado === 'autorizado') {
-              handleQrSuccess(event.data.user, event.data.tokens ? event.data.tokens.access_token : null);
-            }
-          };
-        } catch (_) {}
-      }
-
-      // 3. Escuchar evento de localStorage (Cross-tab en el mismo navegador)
-      const handleStorageEvent = (e) => {
-        if (e.key === 'ecoferia_qr_approved_' + sessionId && e.newValue) {
+        // 3. Polling en tiempo real a Supabase Cloud & Backend con activeId
+        pollInterval = setInterval(async () => {
           try {
-            const data = JSON.parse(e.newValue);
-            handleQrSuccess(data.user, data.tokens ? data.tokens.access_token : null);
+            const res = await ApiClient.consultarQrEstado(activeId);
+            if (res && res.estado === 'autorizado' && res.user) {
+              clearInterval(pollInterval);
+              handleQrSuccess(res.user, res.tokens ? res.tokens.access_token : null);
+            }
           } catch (_) {}
-        }
-      };
-      window.addEventListener('storage', handleStorageEvent);
+        }, 1400);
+      }).catch(() => {});
 
-      // 4. Polling periódico al backend
-      pollInterval = setInterval(async () => {
-        try {
-          const res = await ApiClient.consultarQrEstado(sessionId);
-          if (res && res.estado === 'autorizado' && res.user) {
-            handleQrSuccess(res.user, res.tokens ? res.tokens.access_token : null);
-          }
-        } catch (_) {}
-      }, 1500);
-
-      // 5. Contador regresivo
+      // 4. Contador regresivo
       timer = setInterval(() => {
         setQrCountdown((prev) => {
           if (prev <= 1) {
             setQrStatus('expirado');
             clearInterval(timer);
+            if (pollInterval) clearInterval(pollInterval);
             return 0;
           }
           return prev - 1;
@@ -191,18 +203,18 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
   };
 
   // Login Instantáneo con Cuentas Demo (0 ms de latencia)
-  const handleQuickLoginDemo = (demoKey) => {
-    const demo = DEMO_ROLES[demoKey];
-    if (!demo) return;
+  // Login Instantaneo con Cuentas Demo y Nuevos Usuarios Registrados (1-clic)
+  const handleQuickLoginUser = (targetUser) => {
+    if (!targetUser) return;
     setErrorMsg('');
     try {
-      const { user } = ApiClient.switchRole(demoKey);
+      const { user } = ApiClient.switchRole(targetUser.key || targetUser.email);
       if (onUserChange) onUserChange(user);
       if (showToast) {
         showToast(
-          `Sesión activa como ${user.nombre} (${demo.badge}).`,
+          `Sesion activa como ${user.nombre || user.email} (${user.badge || user.rol}).`,
           'success',
-          'RBAC Autorizado'
+          'Acceso Rapido 1-clic'
         );
       }
       onClose();
@@ -223,6 +235,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
     setErrorMsg('');
     try {
       const { user } = await ApiClient.registro(regNombre, regEmail, regPassword, regRol);
+      setAvailableUsers(ApiClient.getAllAvailableUsers());
       if (onUserChange) onUserChange(user);
       if (showToast) {
         showToast(
@@ -240,15 +253,17 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
   };
 
   // Simulación de Huella / Sensor Biométrico (Desafío Cátedra)
-  const handleSimulateQrBiometric = async (rol = 'productor') => {
+  // Simulacion de Huella / Sensor Biometrico (Desafio Catedra: Productor, Admin o Consumidor)
+  const handleSimulateQrBiometric = async (rol = 'consumidor') => {
     setQrSimulatingBio(true);
     setErrorMsg('');
     try {
-      await new Promise(r => setTimeout(r, 800));
-      const res = await ApiClient.autorizarQrSession(qrSessionId, DEMO_ROLES[rol].email, rol);
+      await new Promise(r => setTimeout(r, 600));
+      const targetUser = DEMO_ROLES[rol] || DEMO_ROLES.consumidor;
+      const res = await ApiClient.autorizarQrSession(qrSessionId, targetUser.email, rol, targetUser);
       handleQrSuccess(res.user, res.tokens ? res.tokens.access_token : null);
     } catch (_) {
-      setErrorMsg('Error en la verificación biométrica.');
+      setErrorMsg('Error en la verificacion biometrica.');
     } finally {
       setQrSimulatingBio(false);
     }
@@ -391,33 +406,36 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
                   <span className="text-[10px] text-emerald-600 font-bold">Respuesta instantánea</span>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLoginDemo('productor')}
-                    className="p-2 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-950 text-left text-xs font-bold transition-all hover:scale-[1.02] shadow-2xs group cursor-pointer"
-                  >
-                    <span className="text-[11px] block font-bold truncate">👨‍🌾 Productor</span>
-                    <p className="text-[10px] text-amber-800 font-semibold truncate">Don Mario</p>
-                  </button>
+                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-0.5">
+                  {availableUsers.map((u) => {
+                    const isProd = u.rol === 'productor';
+                    const isAdmin = u.rol === 'administrador';
+                    const bgClass = isProd
+                      ? 'border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-950'
+                      : isAdmin
+                      ? 'border-purple-200 bg-purple-50/70 hover:bg-purple-100 text-purple-950'
+                      : 'border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950';
+                    const icon = isProd ? '👨‍🌾' : isAdmin ? '🛡️' : '🛒';
+                    const subColor = isProd ? 'text-amber-800' : isAdmin ? 'text-purple-800' : 'text-emerald-800';
 
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLoginDemo('administrador')}
-                    className="p-2 rounded-xl border border-purple-200 bg-purple-50/70 hover:bg-purple-100 text-purple-950 text-left text-xs font-bold transition-all hover:scale-[1.02] shadow-2xs group cursor-pointer"
-                  >
-                    <span className="text-[11px] block font-bold truncate">🛡️ Admin</span>
-                    <p className="text-[10px] text-purple-800 font-semibold truncate">Cátedra</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLoginDemo('consumidor')}
-                    className="p-2 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-left text-xs font-bold transition-all hover:scale-[1.02] shadow-2xs group cursor-pointer"
-                  >
-                    <span className="text-[11px] block font-bold truncate">🛒 Cliente</span>
-                    <p className="text-[10px] text-emerald-800 font-semibold truncate">Carlos Pérez</p>
-                  </button>
+                    return (
+                      <button
+                        key={u.key || u.email}
+                        type="button"
+                        onClick={() => handleQuickLoginUser(u)}
+                        className={`p-2 rounded-xl border text-left text-xs font-bold transition-all hover:scale-[1.02] shadow-2xs group cursor-pointer ${bgClass}`}
+                        title={`${u.nombre} (${u.email})`}
+                      >
+                        <span className="text-[11px] font-bold truncate flex items-center justify-between">
+                          <span>{icon} {u.badge?.split(' ')[0] || u.rol}</span>
+                          {!u.isDemo && <span className="text-[8px] bg-emerald-700 text-white px-1 py-0.2 rounded font-normal">Nuevo</span>}
+                        </span>
+                        <p className={`text-[10px] font-semibold truncate ${subColor}`}>
+                          {u.nombre || u.email}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -615,25 +633,35 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   O prueba la verificación biométrica con 1 clic:
                 </span>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    disabled={qrSimulatingBio || qrStatus === 'autorizado'}
+                    onClick={() => handleSimulateQrBiometric('consumidor')}
+                    className="p-2 rounded-xl border border-emerald-400 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
+                  >
+                    <Fingerprint className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
+                    <span className="truncate">{qrSimulatingBio ? '...' : '🛒 Consumidor'}</span>
+                  </button>
+
                   <button
                     type="button"
                     disabled={qrSimulatingBio || qrStatus === 'autorizado'}
                     onClick={() => handleSimulateQrBiometric('productor')}
-                    className="p-2 rounded-xl border border-amber-300 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="p-2 rounded-xl border border-amber-300 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
                   >
-                    <Fingerprint className="w-4 h-4 text-slate-950" />
-                    <span>{qrSimulatingBio ? 'Validando...' : '🖐️ Huella Productor'}</span>
+                    <Fingerprint className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                    <span className="truncate">{qrSimulatingBio ? '...' : '👨‍🌾 Productor'}</span>
                   </button>
 
                   <button
                     type="button"
                     disabled={qrSimulatingBio || qrStatus === 'autorizado'}
                     onClick={() => handleSimulateQrBiometric('administrador')}
-                    className="p-2 rounded-xl border border-purple-300 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="p-2 rounded-xl border border-purple-300 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
                   >
-                    <Fingerprint className="w-4 h-4 text-purple-200" />
-                    <span>{qrSimulatingBio ? 'Validando...' : '🖐️ Huella Admin'}</span>
+                    <Fingerprint className="w-3.5 h-3.5 text-purple-200 shrink-0" />
+                    <span className="truncate">{qrSimulatingBio ? '...' : '🛡️ Admin'}</span>
                   </button>
                 </div>
               </div>

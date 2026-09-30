@@ -15,7 +15,7 @@ import {
   Briefcase,
   Key
 } from 'lucide-react';
-import { DEMO_ROLES } from '../services/apiClient';
+import { DEMO_ROLES, ApiClient } from '../services/apiClient';
 
 export function Navbar({ 
   activeTab, 
@@ -50,7 +50,8 @@ export function Navbar({
     }
   };
 
-  const currentRoleConfig = DEMO_ROLES[currentUser?.rol] || DEMO_ROLES.consumidor;
+  const currentRoleConfig = DEMO_ROLES[currentUser?.rol] || currentUser || DEMO_ROLES.consumidor;
+  const availableUsers = ApiClient.getAllAvailableUsers();
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
@@ -132,13 +133,13 @@ export function Navbar({
                     <p className="text-[11px] text-slate-500">Prueba los permisos de acceso en vivo</p>
                   </div>
 
-                  <div className="py-1 space-y-1">
-                    {Object.entries(DEMO_ROLES).map(([key, role]) => {
-                      const isSelected = currentUser?.rol === role.rol;
+                  <div className="py-1 space-y-1 max-h-64 overflow-y-auto pr-0.5">
+                    {availableUsers.map((role) => {
+                      const isSelected = currentUser?.email?.toLowerCase() === role.email?.toLowerCase();
                       return (
                         <button
-                          key={key}
-                          onClick={() => handleSelectRole(key)}
+                          key={role.key || role.email}
+                          onClick={() => handleSelectRole(role.key || role.email)}
                           className={`w-full text-left p-2.5 rounded-xl text-xs transition-colors flex items-start gap-2.5 ${
                             isSelected ? 'bg-emerald-50 border border-emerald-200' : 'hover:bg-slate-50'
                           }`}
@@ -146,18 +147,20 @@ export function Navbar({
                           <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${
                             role.rol === 'administrador' ? 'bg-purple-600' : role.rol === 'productor' ? 'bg-amber-500' : 'bg-emerald-500'
                           }`} />
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-slate-900">{role.badge}</span>
-                              {isSelected && <span className="text-[10px] font-extrabold text-emerald-700">ACTIVO</span>}
+                              <span className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                                <span>{role.badge || role.nombre}</span>
+                                {!role.isDemo && <span className="text-[8px] bg-emerald-700 text-white px-1 py-0.2 rounded font-normal">Nuevo</span>}
+                              </span>
+                              {isSelected && <span className="text-[10px] font-extrabold text-emerald-700 shrink-0">ACTIVO</span>}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{role.descripcion}</p>
-                            <span className="text-[10px] text-slate-400 font-mono">{role.email}</span>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-snug truncate">{role.nombre || role.descripcion}</p>
+                            <span className="text-[10px] text-slate-400 font-mono truncate block">{role.email}</span>
                           </div>
                         </button>
                       );
-                    })}
-                  </div>
+                    })}                  </div>
 
                   <div className="pt-2 border-t border-slate-100">
                     <button

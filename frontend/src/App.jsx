@@ -32,7 +32,8 @@ export default function App() {
   
   // Estado para la autorizacion remota de dispositivo movil (Passwordless QR)
   const [mobileAuthSessionId, setMobileAuthSessionId] = useState(null);
-  const [mobileAuthRole, setMobileAuthRole] = useState('productor');
+  const [mobileAuthRole, setMobileAuthRole] = useState('consumidor');
+  const [mobileAuthAvailableUsers, setMobileAuthAvailableUsers] = useState(() => ApiClient.getAllAvailableUsers());
   const [mobileAuthSuccess, setMobileAuthSuccess] = useState(false);
   const [mobileAuthLoading, setMobileAuthLoading] = useState(false);
 
@@ -43,6 +44,7 @@ export default function App() {
       const authId = params.get('qr_auth');
       if (authId) {
         setMobileAuthSessionId(authId);
+        setMobileAuthAvailableUsers(ApiClient.getAllAvailableUsers());
       }
     } catch (_) {}
   }, []);
@@ -77,15 +79,19 @@ export default function App() {
     });
   };
 
-  // Manejador para autorizar sesion de escritorio desde el telefono celular
+  // Manejador para autorizar sesion de escritorio desde el telefono celular (Multi-usuario: Consumidor, Productor, Admin o Registrado)
   const handleAuthorizeMobileSession = async () => {
     if (!mobileAuthSessionId) return;
     setMobileAuthLoading(true);
     try {
-      const demo = DEMO_ROLES[mobileAuthRole] || DEMO_ROLES.productor;
-      await ApiClient.autorizarQrSession(mobileAuthSessionId, demo.email, mobileAuthRole);
+      const all = ApiClient.getAllAvailableUsers();
+      const selectedUser = all.find(u => u.key === mobileAuthRole || u.email?.toLowerCase() === String(mobileAuthRole).toLowerCase())
+        || DEMO_ROLES[mobileAuthRole]
+        || DEMO_ROLES.consumidor;
+
+      await ApiClient.autorizarQrSession(mobileAuthSessionId, selectedUser.email, selectedUser.rol, selectedUser);
       setMobileAuthSuccess(true);
-      showToast(`?Sesion autorizada exitosamente para ${demo.nombre}!`, 'success', 'Dispositivo Vinculado');
+      showToast(`Sesion autorizada exitosamente para ${selectedUser.nombre || selectedUser.email}!`, 'success', 'Dispositivo Vinculado');
     } catch (_) {
       showToast('Error al autorizar sesion QR', 'error');
     } finally {
@@ -108,9 +114,9 @@ export default function App() {
     try {
       const { user } = ApiClient.switchRole(roleKey);
       setCurrentUser(user);
-      const roleConfig = DEMO_ROLES[roleKey] || DEMO_ROLES.consumidor;
+      const roleConfig = DEMO_ROLES[roleKey] || user || DEMO_ROLES.consumidor;
       showToast(
-        `Rol activo: ${roleConfig.badge} (${user.email}). ${roleConfig.descripcion}`,
+        `Rol activo: ${roleConfig.badge || user.badge || 'Usuario'} (${user.email}). ${roleConfig.descripcion || ''}`,
         'success',
         'RBAC Actualizado'
       );
@@ -380,32 +386,30 @@ export default function App() {
                     <label className="text-xs font-bold text-slate-700 block">
                       Selecciona la identidad a autorizar:
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setMobileAuthRole('productor')}
-                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
-                          mobileAuthRole === 'productor'
-                            ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span className="block font-bold">👨‍🌾 Productor</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Don Mario</span>
-                      </button>
+                    <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-0.5">
+                      {mobileAuthAvailableUsers.map((u) => {
+                        const isSelected = (mobileAuthRole === u.key || mobileAuthRole === u.email);
+                        const isProd = u.rol === 'productor';
+                        const isAdmin = u.rol === 'administrador';
+                        const icon = isProd ? '👨‍🌾' : isAdmin ? '🛡️' : '🛒';
+                        const ringClass = isSelected
+                          ? (isProd ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500' : isAdmin ? 'border-purple-500 bg-purple-50 text-purple-950 ring-1 ring-purple-500' : 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-600')
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50';
 
-                      <button
-                        type="button"
-                        onClick={() => setMobileAuthRole('administrador')}
-                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
-                          mobileAuthRole === 'administrador'
-                            ? 'border-purple-500 bg-purple-50 text-purple-950 ring-1 ring-purple-500'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span className="block font-bold">🛡️ Admin</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Catedra</span>
-                      </button>
+                        return (
+                          <button
+                            key={u.key || u.email}
+                            type="button"
+                            onClick={() => setMobileAuthRole(u.key || u.email)}
+                            className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${ringClass}`}
+                          >
+                            <span className="block font-bold truncate">
+                              {icon} {u.badge?.split(' ')[0] || u.rol} {!u.isDemo && <span className="text-[8px] bg-emerald-700 text-white px-1 py-0.2 rounded font-normal">Nuevo</span>}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-normal truncate block">{u.nombre || u.email}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
