@@ -31,7 +31,7 @@ export function Navbar({
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   const navItems = [
-    { id: 'catalog', label: 'Cat?logo Semanal', icon: Sprout },
+    { id: 'catalog', label: 'Catálogo Semanal', icon: Sprout },
     { id: 'checkout', label: 'Reservar Cosecha', icon: ClipboardList },
     { id: 'orders', label: 'Mis Pedidos', icon: Search },
     { id: 'producer', label: 'Panel Productor', icon: UserCheck },
@@ -71,12 +71,12 @@ export function Navbar({
                   Santa Cruz
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden xs:block">Cosecha directa ? Cero intermediarios</p>
+              <p className="text-[11px] text-slate-500 hidden xs:block">Cosecha directa — Cero intermediarios</p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200" aria-label="Navegaci?n principal">
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200" aria-label="Navegación principal">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -101,18 +101,18 @@ export function Navbar({
 
           {/* Actions: RBAC Role Selector + Tour Button + Cart Button + Mobile Hamburger */}
           <div className="flex items-center gap-2">
-            {/* Bot?n de Login Manual */}
+            {/* Botón de Login Manual */}
             <button
               onClick={onOpenLogin}
               id="login-btn-trigger"
               className="flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs"
-              title="Iniciar sesi?n con correo y contrase?a"
+              title="Iniciar sesión con correo y contraseña"
             >
               <User className="w-3.5 h-3.5 text-emerald-700" />
               <span className="hidden sm:inline">Login</span>
             </button>
 
-            {/* RBAC Role Selector Dropdown (C?tedra Live Demo) */}
+            {/* RBAC Role Selector Dropdown (Cátedra Live Demo) */}
             <div className="relative">
               <button
                 onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
@@ -168,7 +168,7 @@ export function Navbar({
                       className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                     >
                       <User className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Iniciar Sesi?n Manual / Credenciales</span>
+                      <span>Iniciar Sesión Manual / Credenciales</span>
                     </button>
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export function Navbar({
               aria-label="Ver tour guiado interactivo de EcoFeria"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden md:inline">Tour Gu?a</span>
+              <span className="hidden md:inline">Tour Guía</span>
             </button>
 
             {/* Cart Button */}
@@ -206,7 +206,7 @@ export function Navbar({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center"
-              aria-label={mobileMenuOpen ? 'Cerrar men?' : 'Abrir men? de navegaci?n'}
+              aria-label={mobileMenuOpen ? 'Cerrar men?' : 'Abrir men? de navegación'}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -216,7 +216,7 @@ export function Navbar({
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <nav className="lg:hidden py-3 border-t border-slate-200 space-y-1 animate-in slide-in-from-top-2 duration-150" aria-label="Men? m?vil">
+          <nav className="lg:hidden py-3 border-t border-slate-200 space-y-1 animate-in slide-in-from-top-2 duration-150" aria-label="Men? móvil">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;

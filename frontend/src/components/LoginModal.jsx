@@ -616,7 +616,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
                 <div className="space-y-2">
                   <p className="text-xs font-extrabold text-slate-800 flex items-center justify-center gap-1.5">
                     <RefreshCw className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-                    <span>Esperando escaneo con la c?mara del tel?fono...</span>
+                    <span>Esperando escaneo con la cámara del teléfono...</span>
                   </p>
                   <div className="pt-0.5">
                     <button
@@ -625,7 +625,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
                       className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
                     >
                       <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Abrir Simulador M?vil (Nueva Pesta?a)</span>
+                      <span>Abrir Simulador Móvil (Nueva Pestaña)</span>
                     </button>
                   </div>
                 </div>

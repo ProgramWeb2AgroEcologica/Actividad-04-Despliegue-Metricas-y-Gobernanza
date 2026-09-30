@@ -60,7 +60,7 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Manejo de inicio de sesi?n manual (con formulario de correo y contrase?a)
+  // Manejo de inicio de sesión manual (con formulario de correo y contraseña)
   const handleManualLogin = async (email, password) => {
     const { user } = await ApiClient.login(email, password);
     setCurrentUser(user);
@@ -155,15 +155,15 @@ export default function App() {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
         if (existing.cantidad >= product.stock) {
-          showToast(`No hay m?s stock disponible de ${product.nombre}`, 'info');
+          showToast(`No hay más stock disponible de ${product.nombre}`, 'info');
           return prev;
         }
-        showToast(`A?adiste +1 ${product.nombre} a tu canasta`, 'success');
+        showToast(`Añadiste +1 ${product.nombre} a tu canasta`, 'success');
         return prev.map((item) =>
           item.id === product.id ? { ...item, cantidad: item.cantidad + 1 } : item
         );
       }
-      showToast(`${product.nombre} a?adido a tu canasta`, 'success');
+      showToast(`${product.nombre} añadido a tu canasta`, 'success');
       return [...prev, { ...product, cantidad: 1 }];
     });
   };
@@ -258,7 +258,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-200 selection:text-emerald-950">
-      {/* Barra de Navegaci?n Principal con Selector de Roles RBAC */}
+      {/* Barra de Navegación Principal con Selector de Roles RBAC */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -459,7 +459,7 @@ export default function App() {
       {/* Sistema de Notificaciones Toast */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
-      {/* Footer Acad?mico e Institucional (UPDS) */}
+      {/* Footer Académico e Institucional (UPDS) */}
       <footer className="bg-white border-t border-slate-200 py-8 px-4 sm:px-6 text-xs text-slate-500">
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -469,21 +469,21 @@ export default function App() {
               </div>
               <span className="font-extrabold text-slate-800 text-sm">EcoFeria Santa Cruz</span>
               <span className="text-slate-400">|</span>
-              <span className="text-emerald-800 font-semibold">Programaci?n Web II</span>
+              <span className="text-emerald-800 font-semibold">Programación Web II</span>
             </div>
 
-            {/* Credenciales Acad?micas */}
+            {/* Credenciales Académicas */}
             <div className="text-center sm:text-right space-y-0.5">
               <p className="font-bold text-slate-700">
                 Pod de Desarrollo: <span className="text-emerald-900">Eduar Heredia Chavez</span> &amp; <span className="text-emerald-900">Limbert David Quispe Osco</span>
               </p>
               <p className="text-[11px] text-slate-500">
-                Universidad Privada Domingo Savio (UPDS) ? Santa Cruz de la Sierra, Bolivia (2026)
+                Universidad Privada Domingo Savio (UPDS) — Santa Cruz de la Sierra, Bolivia (2026)
               </p>
             </div>
           </div>
 
-          {/* Sostenibilidad y m?tricas de c?tedra */}
+          {/* Sostenibilidad y métricas de cátedra */}
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-emerald-800 font-medium">
@@ -497,7 +497,7 @@ export default function App() {
               </span>
             </div>
             <p className="text-slate-600">
-              Desarrollo asistido por Inteligencia Artificial (AI DLC) ? Costo Operativo 0 Bs
+              Desarrollo asistido por Inteligencia Artificial (AI DLC) — Costo Operativo 0 Bs
             </p>
           </div>
         </div>

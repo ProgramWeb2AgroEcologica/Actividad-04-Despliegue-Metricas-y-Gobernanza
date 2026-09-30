@@ -178,7 +178,7 @@ export function ProducerDashboardView({
             <div>
               <p className="font-extrabold text-amber-950">Modo Solo Lectura (Rol: Consumidor - {currentUser?.email || 'cliente@ecoferia.bo'})</p>
               <p className="text-[11px] text-amber-800 mt-0.5">
-                Por pol?ticas RBAC del backend, las acciones de creaci?n, modificaci?n y despacho est?n protegidas para Productores y Administradores.
+                Por políticas RBAC del backend, las acciones de creación, modificación y despacho están protegidas para Productores y Administradores.
               </p>
             </div>
           </div>
@@ -202,7 +202,7 @@ export function ProducerDashboardView({
                 Permisos de Escritura Habilitados ({currentUser?.rol === 'administrador' ? 'Administrador General' : 'Productor Campesino'})
               </p>
               <p className="text-[11px] text-emerald-800 mt-0.5">
-                Sesi?n autenticada como <strong>{currentUser?.email}</strong>. Puedes publicar cosechas y gestionar despachos feriales.
+                Sesión autenticada como <strong>{currentUser?.email}</strong>. Puedes publicar cosechas y gestionar despachos feriales.
               </p>
             </div>
           </div>
