@@ -244,7 +244,8 @@ def iniciar_sesion_qr():
     Emite un session_id efímero (validez: 120 segundos).
     """
     import time
-    session_id = str(uuid.uuid4())
+    datos = request.get_json(silent=True) or {}
+    session_id = datos.get("session_id") or str(uuid.uuid4())
     ahora = time.time()
     
     _sesiones_qr[session_id] = {

@@ -17,9 +17,11 @@ import {
   Fingerprint,
   RefreshCw,
   UserPlus,
-  ExternalLink
+  ExternalLink,
+  Copy
 } from 'lucide-react';
 import { ApiClient, DEMO_ROLES } from '../services/apiClient';
+import QRCode from 'qrcode';
 
 export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, onUserChange, showToast }) {
   const [authTab, setAuthTab] = useState('login'); // 'login' | 'registro' | 'qr'
@@ -43,6 +45,9 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
   const [qrStatus, setQrStatus] = useState('esperando'); // 'esperando' | 'autorizado' | 'expirado'
   const [qrCountdown, setQrCountdown] = useState(120);
   const [qrSimulatingBio, setQrSimulatingBio] = useState(false);
+  const [qrImageDataUrl, setQrImageDataUrl] = useState('');
+  const [qrUrl, setQrUrl] = useState('');
+  const [qrCopied, setQrCopied] = useState(false);
 
   // Iniciar sesión QR y configurar listener en tiempo real (Broadcast + Storage + Polling)
   useEffect(() => {
@@ -51,13 +56,32 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
     let bc = null;
 
     if (isOpen && authTab === 'qr') {
-      const sessionId = 'qr-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
-      setQrSessionId(sessionId);
+      const fallbackId = 'qr-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+      setQrSessionId(fallbackId);
       setQrStatus('esperando');
       setQrCountdown(120);
+      setQrImageDataUrl('');
 
-      // 1. Iniciar en backend (silencioso)
-      ApiClient.iniciarQrSession().catch(() => {});
+      ApiClient.iniciarQrSession(fallbackId).then((initData) => {
+        const activeId = initData?.session_id || fallbackId;
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const targetBase = isLocal ? 'https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev' : window.location.origin;
+        const fullUrl = targetBase + '/?qr_auth=' + activeId;
+
+        setQrSessionId(activeId);
+        setQrUrl(fullUrl);
+
+        QRCode.toDataURL(fullUrl, {
+          width: 260,
+          margin: 1,
+          color: { dark: '#064e3b', light: '#ffffff' }
+        }).then((url) => {
+          setQrImageDataUrl(url);
+        }).catch(() => {
+          setQrImageDataUrl('https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=064e3b&data=' + encodeURIComponent(fullUrl));
+        });
+      }).catch(() => {});
+      const sessionId = fallbackId;
 
       // 2. Escuchar evento de BroadcastChannel (Cross-tab)
       if (window.BroadcastChannel) {
@@ -567,57 +591,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
 
               {/* Contenedor del Código QR */}
               <div className="relative inline-block mx-auto p-3.5 bg-white rounded-3xl border-2 border-emerald-800/30 shadow-md">
-                <div className="relative w-40 h-40 mx-auto flex items-center justify-center bg-slate-900 rounded-2xl p-2.5 text-white overflow-hidden">
-                  <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="currentColor">
-                    <rect x="5" y="5" width="25" height="25" rx="3" fill="#10b981" />
-                    <rect x="9" y="9" width="17" height="17" rx="2" fill="#064e3b" />
-                    <rect x="13" y="13" width="9" height="9" fill="#10b981" />
-
-                    <rect x="70" y="5" width="25" height="25" rx="3" fill="#10b981" />
-                    <rect x="74" y="9" width="17" height="17" rx="2" fill="#064e3b" />
-                    <rect x="78" y="13" width="9" height="9" fill="#10b981" />
-
-                    <rect x="5" y="70" width="25" height="25" rx="3" fill="#10b981" />
-                    <rect x="9" y="74" width="17" height="17" rx="2" fill="#064e3b" />
-                    <rect x="13" y="78" width="9" height="9" fill="#10b981" />
-
-                    <rect x="35" y="10" width="6" height="6" fill="#34d399" />
-                    <rect x="47" y="10" width="6" height="6" fill="#34d399" />
-                    <rect x="59" y="10" width="6" height="6" fill="#34d399" />
-
-                    <rect x="35" y="22" width="6" height="6" fill="#34d399" />
-                    <rect x="50" y="22" width="12" height="6" fill="#34d399" />
-
-                    <rect x="10" y="38" width="12" height="6" fill="#34d399" />
-                    <rect x="40" y="38" width="20" height="6" fill="#34d399" />
-                    <rect x="70" y="38" width="10" height="6" fill="#34d399" />
-
-                    <rect x="15" y="48" width="12" height="6" fill="#34d399" />
-                    <rect x="75" y="48" width="15" height="6" fill="#34d399" />
-
-                    <rect x="35" y="60" width="18" height="6" fill="#34d399" />
-                    <rect x="62" y="60" width="15" height="6" fill="#34d399" />
-
-                    <rect x="35" y="75" width="10" height="6" fill="#34d399" />
-                    <rect x="50" y="75" width="10" height="12" fill="#34d399" />
-                    <rect x="70" y="75" width="20" height="6" fill="#34d399" />
-
-                    <circle cx="50" cy="50" r="14" fill="#047857" stroke="#34d399" strokeWidth="2" />
-                  </svg>
-
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <Smartphone className="w-5 h-5 text-emerald-300 animate-pulse" />
-                  </div>
-                  <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399] animate-bounce" style={{ top: '48%' }} />
-                </div>
-
-                <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span className="truncate max-w-[130px]">{qrSessionId || 'sesion-activa'}</span>
-                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                    ⏱️ {qrCountdown}s
-                  </span>
-                </div>
-              </div>
+                <div className="relative w-44 h-44 mx-auto flex items-center justify-center bg-white rounded-2xl p-1.5 overflow-hidden border border-emerald-100 shadow-inner">{qrImageDataUrl ? (<img src={qrImageDataUrl} alt="QR" className="w-full h-full object-contain rounded-xl" />) : (<div className="flex flex-col items-center justify-center text-slate-500 text-xs"><RefreshCw className="w-6 h-6 text-emerald-600 animate-spin mb-2" /><span>Generando QR real...</span></div>)}{qrStatus === "autorizado" && (<div className="absolute inset-0 bg-emerald-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-white rounded-xl"><CheckCircle2 className="w-12 h-12 text-emerald-400 mb-1" /><span className="text-xs font-extrabold">¡Vinculado con éxito!</span></div>)}</div><div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono px-1"><span className="truncate max-w-[130px]" title={qrSessionId}>{qrSessionId || "sesion-activa"}</span><span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">⏱️ {qrCountdown}s</span></div></div>
 
                             {qrStatus === 'esperando' && (
                 <div className="space-y-2">
@@ -625,16 +599,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
                     <RefreshCw className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
                     <span>Esperando escaneo con la cámara del teléfono...</span>
                   </p>
-                  <div className="pt-0.5">
-                    <button
-                      type="button"
-                      onClick={() => window.open(`${window.location.origin}/?qr_auth=${qrSessionId}`, '_blank')}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Abrir Simulador Móvil (Nueva Pestaña)</span>
-                    </button>
-                  </div>
+                  <div className="flex items-center justify-center gap-2 pt-0.5"><button type="button" onClick={() => { if (qrUrl) { navigator.clipboard.writeText(qrUrl); setQrCopied(true); setTimeout(() => setQrCopied(false), 2000); if (showToast) showToast("Enlace copiado", "success"); } }} className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-700 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-xl cursor-pointer"><Copy className="w-3.5 h-3.5" /><span>{qrCopied ? "¡Enlace Copiado!" : "Copiar Enlace"}</span></button><button type="button" onClick={() => window.open(qrUrl || (window.location.origin + "/?qr_auth=" + qrSessionId), "_blank")} className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-xl cursor-pointer shadow-2xs"><ExternalLink className="w-3.5 h-3.5 text-emerald-700" /><span>Simulador Pestaña</span></button></div>
                 </div>
               )}
 

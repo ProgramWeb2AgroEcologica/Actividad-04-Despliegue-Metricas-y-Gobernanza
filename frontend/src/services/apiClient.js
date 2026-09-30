@@ -261,21 +261,27 @@ export const ApiClient = {
 
   // --- AUTENTICACI?N POR C?DIGO QR (DESAF?O C?TEDRA UPDS) ---
 
-  async iniciarQrSession() {
+  async iniciarQrSession(preferredId) {
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/qr/iniciar`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/auth/qr/iniciar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferredId ? { session_id: preferredId } : {})
+      });
       if (res.ok) {
         return await res.json();
       }
     } catch (_) {}
 
     // Fallback con UUID para emparejamiento inmediato
-    const id = 'qr-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+    const id = preferredId || ('qr-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36));
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const targetBase = isLocal ? 'https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev' : (typeof window !== 'undefined' ? window.location.origin : '');
     return {
       session_id: id,
       estado: 'pendiente',
       expires_in: 120,
-      qr_url: `${window.location.origin}/?qr_auth=${id}`
+      qr_url: `${targetBase}/?qr_auth=${id}`
     };
   },
 

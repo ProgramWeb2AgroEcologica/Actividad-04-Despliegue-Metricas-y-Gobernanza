@@ -390,7 +390,7 @@ export default function App() {
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         }`}
                       >
-                        <span className="block font-bold">????? Productor</span>
+                        <span className="block font-bold">👨‍🌾 Productor</span>
                         <span className="text-[10px] text-slate-500 font-normal">Don Mario</span>
                       </button>
 
@@ -403,7 +403,7 @@ export default function App() {
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         }`}
                       >
-                        <span className="block font-bold">??? Admin</span>
+                        <span className="block font-bold">🛡️ Admin</span>
                         <span className="text-[10px] text-slate-500 font-normal">Catedra</span>
                       </button>
                     </div>
