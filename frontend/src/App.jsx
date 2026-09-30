@@ -9,7 +9,7 @@ import { ProducerDashboardView } from './views/ProducerDashboardView';
 import { SustainabilityDashboardView } from './views/SustainabilityDashboardView';
 import { LoginModal } from './components/LoginModal';
 import { ApiClient, DEMO_ROLES } from './services/apiClient';
-import { Sprout, ShieldCheck, Cpu, Leaf } from 'lucide-react';
+import { Sprout, ShieldCheck, Cpu, Leaf, Smartphone, Fingerprint, CheckCircle2, X, Key } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'checkout' | 'orders' | 'producer' | 'sustainability'
@@ -29,6 +29,23 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
+  
+  // Estado para la autorizacion remota de dispositivo movil (Passwordless QR)
+  const [mobileAuthSessionId, setMobileAuthSessionId] = useState(null);
+  const [mobileAuthRole, setMobileAuthRole] = useState('productor');
+  const [mobileAuthSuccess, setMobileAuthSuccess] = useState(false);
+  const [mobileAuthLoading, setMobileAuthLoading] = useState(false);
+
+  // Detectar parametro qr_auth al escanear con la camara del telefono
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const authId = params.get('qr_auth');
+      if (authId) {
+        setMobileAuthSessionId(authId);
+      }
+    } catch (_) {}
+  }, []);
 
   // Toast helper
   const showToast = (message, type = 'success', title = '') => {
@@ -51,8 +68,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('ecoferia_auth_user_v4');
-    localStorage.removeItem('ecoferia_auth_token_v4');
+    ApiClient.clearSession();
     setCurrentUser({
       id: 'guest',
       email: '',
@@ -61,10 +77,36 @@ export default function App() {
     });
   };
 
-  // Cambio din?mico de rol (RBAC) para defensa en vivo ante el docente
-  const handleSwitchRole = async (roleKey) => {
+  // Manejador para autorizar sesion de escritorio desde el telefono celular
+  const handleAuthorizeMobileSession = async () => {
+    if (!mobileAuthSessionId) return;
+    setMobileAuthLoading(true);
     try {
-      const { user } = await ApiClient.switchRole(roleKey);
+      const demo = DEMO_ROLES[mobileAuthRole] || DEMO_ROLES.productor;
+      await ApiClient.autorizarQrSession(mobileAuthSessionId, demo.email, mobileAuthRole);
+      setMobileAuthSuccess(true);
+      showToast(`?Sesion autorizada exitosamente para ${demo.nombre}!`, 'success', 'Dispositivo Vinculado');
+    } catch (_) {
+      showToast('Error al autorizar sesion QR', 'error');
+    } finally {
+      setMobileAuthLoading(false);
+    }
+  };
+
+  const handleCloseMobileAuthModal = () => {
+    setMobileAuthSessionId(null);
+    setMobileAuthSuccess(false);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('qr_auth');
+      window.history.replaceState({}, '', url.pathname);
+    } catch (_) {}
+  };
+
+  // Cambio dinamico de rol (RBAC) para defensa en vivo ante el docente (0 ms de latencia)
+  const handleSwitchRole = (roleKey) => {
+    try {
+      const { user } = ApiClient.switchRole(roleKey);
       setCurrentUser(user);
       const roleConfig = DEMO_ROLES[roleKey] || DEMO_ROLES.consumidor;
       showToast(
@@ -72,8 +114,7 @@ export default function App() {
         'success',
         'RBAC Actualizado'
       );
-    } catch (err) {
-      console.error('Error al cambiar de rol:', err);
+    } catch (_) {
       showToast('No se pudo autenticar el rol seleccionado.', 'error');
     }
   };
@@ -90,7 +131,7 @@ export default function App() {
         setProducts(prodList);
         setOrders(ordList);
       } catch (err) {
-        console.error('Error cargando datos de API:', err);
+        // Error silencioso de conexion de red
         showToast('Error al conectar con la API de EcoFeria', 'error');
       } finally {
         setLoading(false);
@@ -104,7 +145,7 @@ export default function App() {
     try {
       localStorage.setItem('ecoferia_cart_v1', JSON.stringify(cart));
     } catch (e) {
-      console.error(e);
+      // Storage local protegido
     }
   }, [cart]);
 
@@ -296,13 +337,122 @@ export default function App() {
         }}
       />
 
-      {/* Modal de Inicio de Sesi?n y Control de Acceso RBAC */}
+            {/* Modal de Autorizacion de Dispositivo Movil (Passwordless QR) */}
+      {mobileAuthSessionId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-50 duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-emerald-500/30 overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white p-5 relative border-b border-emerald-800">
+              <button
+                onClick={handleCloseMobileAuthModal}
+                className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                aria-label="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-white">Vinculacion Movil</h3>
+                  <p className="text-[11px] text-emerald-200">Acceso Seguro Passwordless</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {!mobileAuthSuccess ? (
+                <>
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-950 leading-relaxed">
+                    <p className="font-extrabold flex items-center gap-1.5 text-amber-900">
+                      <span>?? Solicitud de Escritorio Detectada</span>
+                    </p>
+                    <p className="text-[11px] text-amber-800 mt-1">
+                      Un computador solicita iniciar sesion con tu dispositivo movil. Selecciona tu perfil y confirma con tu sensor biometrico:
+                    </p>
+                    <p className="font-mono text-[10px] text-amber-700 mt-1.5 bg-amber-100/70 px-2 py-0.5 rounded-md inline-block">
+                      ID: {mobileAuthSessionId}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block">
+                      Selecciona la identidad a autorizar:
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setMobileAuthRole('productor')}
+                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
+                          mobileAuthRole === 'productor'
+                            ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="block font-bold">????? Productor</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Don Mario</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMobileAuthRole('administrador')}
+                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
+                          mobileAuthRole === 'administrador'
+                            ? 'border-purple-500 bg-purple-50 text-purple-950 ring-1 ring-purple-500'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="block font-bold">??? Admin</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Catedra</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={mobileAuthLoading}
+                    onClick={handleAuthorizeMobileSession}
+                    className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] disabled:opacity-50"
+                  >
+                    <Fingerprint className="w-5 h-5 text-emerald-200 animate-pulse" />
+                    <span>{mobileAuthLoading ? 'Verificando huella...' : 'AUTORIZAR CON HUELLA / BIOMETRIA'}</span>
+                  </button>
+                </>
+              ) : (
+                <div className="text-center py-4 space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 border-2 border-emerald-500 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900">?Vinculacion Exitosa!</h4>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
+                      La sesion en la computadora de escritorio se ha desbloqueado correctamente.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCloseMobileAuthModal}
+                    className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Continuar al Catalogo
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Modal de Inicio de Sesion y Control de Acceso RBAC */}
       <LoginModal
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
         currentUser={currentUser}
         onLogin={handleManualLogin}
         onLogout={handleLogout}
+        onUserChange={setCurrentUser}
         showToast={showToast}
       />
 

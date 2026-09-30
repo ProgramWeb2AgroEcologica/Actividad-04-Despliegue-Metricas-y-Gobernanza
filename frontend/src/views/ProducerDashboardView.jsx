@@ -142,7 +142,7 @@ export function ProducerDashboardView({
       }
       setModalOpen(false);
     } catch (err) {
-      console.error(err);
+      // Error manejado silenciosamente
       showToast('Error al guardar el producto.', 'error');
     }
   };

@@ -119,7 +119,7 @@ export function CheckoutView({ cart, onBackToCatalog, onOrderConfirmed, showToas
       setConfirmedOrder(result);
       showToast(`¡Reserva ${result.codigo} registrada con éxito!`, 'success', 'Reserva confirmada');
     } catch (err) {
-      console.error(err);
+      // Manejo local de error
       showToast('Ocurrió un error al registrar la reserva. Intenta de nuevo.', 'error');
     } finally {
       setSubmitting(false);

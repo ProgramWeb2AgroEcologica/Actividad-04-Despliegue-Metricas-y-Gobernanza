@@ -221,7 +221,7 @@ function setStored(key, data) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (err) {
-    console.error('Error guardando en localStorage:', err);
+    // Error de storage local silenciado
   }
 }
 
