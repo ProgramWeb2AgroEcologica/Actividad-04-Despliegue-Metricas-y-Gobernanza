@@ -366,7 +366,7 @@ export default function App() {
                 <>
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-950 leading-relaxed">
                     <p className="font-extrabold flex items-center gap-1.5 text-amber-900">
-                      <span>?? Solicitud de Escritorio Detectada</span>
+                      <span>💻 Solicitud de Escritorio Detectada</span>
                     </p>
                     <p className="text-[11px] text-amber-800 mt-1">
                       Un computador solicita iniciar sesion con tu dispositivo movil. Selecciona tu perfil y confirma con tu sensor biometrico:
@@ -425,7 +425,7 @@ export default function App() {
                     <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-slate-900">?Vinculacion Exitosa!</h4>
+                    <h4 className="font-extrabold text-sm text-slate-900">¡Vinculación Exitosa!</h4>
                     <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
                       La sesion en la computadora de escritorio se ha desbloqueado correctamente.
                     </p>
@@ -452,7 +452,13 @@ export default function App() {
         currentUser={currentUser}
         onLogin={handleManualLogin}
         onLogout={handleLogout}
-        onUserChange={setCurrentUser}
+        onUserChange={(newUser) => {
+          setCurrentUser(newUser);
+          if (newUser && newUser.id !== 'guest') {
+            const tok = ApiClient.getToken() || ('jwt-' + (newUser.rol || 'user') + '-' + Date.now());
+            ApiClient.setSession(newUser, tok);
+          }
+        }}
         showToast={showToast}
       />
 

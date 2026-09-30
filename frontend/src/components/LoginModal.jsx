@@ -16,7 +16,8 @@ import {
   Smartphone,
   Fingerprint,
   RefreshCw,
-  UserPlus
+  UserPlus,
+  ExternalLink
 } from 'lucide-react';
 import { ApiClient, DEMO_ROLES } from '../services/apiClient';
 
@@ -64,7 +65,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
           bc = new BroadcastChannel('ecoferia_qr_channel');
           bc.onmessage = (event) => {
             if (event.data && event.data.session_id === sessionId && event.data.estado === 'autorizado') {
-              handleQrSuccess(event.data.user);
+              handleQrSuccess(event.data.user, event.data.tokens ? event.data.tokens.access_token : null);
             }
           };
         } catch (_) {}
@@ -75,7 +76,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
         if (e.key === 'ecoferia_qr_approved_' + sessionId && e.newValue) {
           try {
             const data = JSON.parse(e.newValue);
-            handleQrSuccess(data.user);
+            handleQrSuccess(data.user, data.tokens ? data.tokens.access_token : null);
           } catch (_) {}
         }
       };
@@ -86,7 +87,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
         try {
           const res = await ApiClient.consultarQrEstado(sessionId);
           if (res && res.estado === 'autorizado' && res.user) {
-            handleQrSuccess(res.user);
+            handleQrSuccess(res.user, res.tokens ? res.tokens.access_token : null);
           }
         } catch (_) {}
       }, 1500);
@@ -112,14 +113,20 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
     }
   }, [isOpen, authTab]);
 
-  const handleQrSuccess = (user) => {
+  const handleQrSuccess = (user, token) => {
     setQrStatus('autorizado');
+    const validUser = user || DEMO_ROLES.productor;
+    const validToken = token || (validUser && validUser.rol ? ('jwt-qr-' + validUser.rol + '-' + Date.now()) : 'jwt-qr-session');
+
+    // Persistir sesion de inmediato en localStorage para evitar reseteo al recargar
+    ApiClient.setSession(validUser, validToken);
+
     if (onUserChange) {
-      onUserChange(user);
+      onUserChange(validUser);
     }
     if (showToast) {
       showToast(
-        `¡Dispositivo vinculado con éxito! Bienvenido ${user.nombre || user.email}.`,
+        '¡Dispositivo vinculado con éxito! Bienvenido ' + (validUser.nombre || validUser.email) + '.',
         'success',
         'Acceso QR Passwordless'
       );
@@ -215,7 +222,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
     try {
       await new Promise(r => setTimeout(r, 800));
       const res = await ApiClient.autorizarQrSession(qrSessionId, DEMO_ROLES[rol].email, rol);
-      handleQrSuccess(res.user);
+      handleQrSuccess(res.user, res.tokens ? res.tokens.access_token : null);
     } catch (_) {
       setErrorMsg('Error en la verificación biométrica.');
     } finally {
@@ -634,7 +641,7 @@ export function LoginModal({ isOpen, onClose, currentUser, onLogin, onLogout, on
               {qrStatus === 'autorizado' && (
                 <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-bold flex items-center justify-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>¡?Dispositivo autorizado! Desbloqueando...</span>
+                  <span>¡Dispositivo autorizado! Desbloqueando...</span>
                 </div>
               )}
 

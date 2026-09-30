@@ -17,11 +17,11 @@ export const DEMO_ROLES = {
     id: '33333333-3333-3333-3333-333333333333',
     email: 'cliente@ecoferia.bo',
     password: 'Cliente123!',
-    nombre: 'Carlos P?rez',
+    nombre: 'Carlos Pérez',
     rol: 'consumidor',
     badge: 'Consumidor',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-    descripcion: 'Explora cosechas, a?ade productos a la canasta y reserva pedidos.'
+    descripcion: 'Explora cosechas, añade productos a la canasta y reserva pedidos.'
   },
   productor: {
     id: '22222222-2222-2222-2222-222222222222',
@@ -309,6 +309,9 @@ export const ApiClient = {
       user: demo,
       tokens: { access_token: 'jwt-qr-' + rol + '-' + Date.now() }
     };
+
+    // Guardar sesion persistente
+    this.setSession(demo, approvalPayload.tokens.access_token);
 
     // Notificar en tiempo real a la computadora
     try {
