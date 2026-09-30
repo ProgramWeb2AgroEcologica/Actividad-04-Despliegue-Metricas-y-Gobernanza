@@ -20,10 +20,15 @@ __pycache__/
 dist/
 build/
 
-# Informes binarios generados (subir a plataforma acad?mica UPDS, no en git)
+# Informes y diapositivas excluidos (Solo se conserva INFORME_ACTIVIDAD_04.html en Git)
 *.docx
 *.pdf
+*.pptx
+DIAPOSITIVAS_*
+DocumentoYmaterialDeApoyo/
+scripts/
 generate_*.py
 build_*.py
 test.docx
 test.pdf
+INFORME_ACTIVIDAD_*.md
