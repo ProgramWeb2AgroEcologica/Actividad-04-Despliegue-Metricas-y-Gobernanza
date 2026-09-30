@@ -13,7 +13,8 @@ import {
   ShieldCheck, 
   User, 
   Briefcase,
-  Key
+  Key,
+  FileText
 } from 'lucide-react';
 import { DEMO_ROLES, ApiClient } from '../services/apiClient';
 
@@ -98,6 +99,16 @@ export function Navbar({
                 </button>
               );
             })}
+            <a
+              href="/INFORME_ACTIVIDAD_04.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-emerald-800 hover:text-emerald-950 hover:bg-white/80 transition-all min-h-[40px]"
+              title="Abrir Informe Académico Oficial (HTML Renderizado)"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Informe HTML</span>
+            </a>
           </nav>
 
           {/* Actions: RBAC Role Selector + Tour Button + Cart Button + Mobile Hamburger */}
@@ -239,6 +250,16 @@ export function Navbar({
                 </button>
               );
             })}
+            <a
+              href="/INFORME_ACTIVIDAD_04.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-emerald-800 hover:bg-emerald-50 transition-all border border-emerald-200/60 bg-emerald-50/40"
+              title="Abrir Informe Académico Oficial (HTML Renderizado)"
+            >
+              <FileText className="w-4 h-4 text-emerald-700" />
+              <span>Informe Oficial (HTML)</span>
+            </a>
           </nav>
         )}
       </div>

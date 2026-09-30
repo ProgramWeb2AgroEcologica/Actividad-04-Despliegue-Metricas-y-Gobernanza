@@ -7,6 +7,19 @@
 
 ---
 
+## 📄 INFORME ACADÉMICO OFICIAL (PÁGINA HTML RENDERIZADA)
+
+> 💡 **¿Por qué GitHub muestra el código al hacer clic en un archivo `.html`?**  
+> GitHub es un repositorio de código fuente y, por políticas de seguridad contra secuencias de comandos (XSS), muestra el texto con números de línea en lugar de renderizar la web.  
+> **Para ver el informe como una página web interactiva con todos sus estilos, gráficos y tipografías, haz clic en cualquiera de estos enlaces directos:**
+
+- 🌐 **[Ver Informe Web Renderizado en Vivo (Cloudflare Pages)](https://actividad-04-despliegue-metricas-y-gobernanza.pages.dev/INFORME_ACTIVIDAD_04.html)** *(Recomendado: Carga instantánea en CDN)*
+- 🚀 **[Ver Informe Web Renderizado (Visor HTML GitHubPreview)](https://htmlpreview.github.io/?https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza/blob/main/INFORME_ACTIVIDAD_04.html)**
+- ⚡ **[Ver Informe Web Renderizado (CDN Raw.githack)](https://raw.githack.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza/main/INFORME_ACTIVIDAD_04.html)**
+- 💻 **En tu PC local:** Abre el archivo `INFORME_ACTIVIDAD_04.html` con doble clic desde tu explorador de archivos en Google Chrome, Microsoft Edge o Mozilla Firefox.
+
+---
+
 ## 👥 Pod de Ingeniería y Distribución de Ramas en Git
 
 | Integrante | Rol en el Pod | Rama de Trabajo en GitHub | Commits y Aportes Principales |
@@ -26,10 +39,6 @@
   [https://ecoferia.onrender.com/api/docs](https://ecoferia.onrender.com/api/docs)
 - **Repositorio Oficial de la Organización en GitHub:**  
   [https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza](https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza)
-- **Informe Académico Oficial Interactivo:**  
-  [Ver INFORME_ACTIVIDAD_04.html](./INFORME_ACTIVIDAD_04.html)
-- **Tutorial Completo de Despliegue en la Nube:**  
-  [Ver TUTORIAL_DESPLIEGUE.md](./TUTORIAL_DESPLIEGUE.md)
 
 ---
 
@@ -39,11 +48,11 @@ El sistema incluye cuentas permanentes pre-sembradas para verificar el control d
 
 | Rol | Correo Electrónico | Contraseña | Permisos y Capacidades |
 | :--- | :--- | :--- | :--- |
-| **Administrador** | admin@ecoferia.bo | Admin123! | Superusuario. Acceso total a todas las operaciones, auditoría de tareas de cualquier usuario, cambio de estados de pedidos y reinicio del sistema. |
-| **Productor Campesino** | productor@ecoferia.bo | Productor123! | Publicador de feria. Puede publicar cosechas (`POST /api/productos`), modificar existencias y actualizar estados de despacho ferial. |
-| **Consumidor (Cliente)** | cliente@ecoferia.bo | Cliente123! | Modo consulta en panel. Puede ver catálogo y registrar reservas. Si intenta publicar cosechas o editar pedidos, recibe **HTTP 403 Forbidden**. |
-| **Creador Independiente** | creador@ecoferia.bo | Creador123! | Rol publicador para publicación de cosechas y gestión de tareas propias. |
-| **Usuario Externo (Control)**| beto@ecoferia.bo | Beto123! | Usuario para comprobar privacidad: si intenta acceder a las tareas de Ana por ID, recibe **HTTP 403 Forbidden**. |
+| **Administrador** | `admin@ecoferia.bo` | `Admin123!` | Superusuario. Acceso total a todas las operaciones, auditoría de tareas de cualquier usuario, cambio de estados de pedidos y reinicio del sistema. |
+| **Productor Campesino** | `productor@ecoferia.bo` | `Productor123!` | Publicador de feria. Puede publicar cosechas (`POST /api/productos`), modificar existencias y actualizar estados de despacho ferial. |
+| **Consumidor (Cliente)** | `cliente@ecoferia.bo` | `Cliente123!` | Modo consulta en panel. Puede ver catálogo y registrar reservas. Si intenta publicar cosechas o editar pedidos, recibe **HTTP 403 Forbidden**. |
+| **Creador Independiente** | `creador@ecoferia.bo` | `Creador123!` | Rol publicador para publicación de cosechas y gestión de tareas propias. |
+| **Usuario Externo (Control)**| `beto@ecoferia.bo` | `Beto123!` | Usuario para comprobar privacidad: si intenta acceder a las tareas de Ana por ID, recibe **HTTP 403 Forbidden**. |
 
 ---
 
@@ -74,6 +83,7 @@ cd backend
 ============================= 30 passed in 0.32s ==============================
 ```
 
+#### Evidencia Fotográfica de Pruebas Pytest:
 ![Certificación de Pruebas Pytest - 30 Tests Aprobados](pystest.jpeg)
 
 - **Tests 01 a 02:** Verificación de salud (`/api/salud`) y disponibilidad de Swagger UI OpenAPI (`/api/docs`).
@@ -96,159 +106,220 @@ Auditoría integrada en el Frontend (`SustainabilityDashboardView.jsx`):
 
 ---
 
-# 🚀 TUTORIAL PASO A PASO: Cómo Desplegar Toda la Plataforma en la Nube desde Cero en Cualquier PC
+# 🌐 TUTORIAL MAESTRO: Cómo Desplegar Toda la Plataforma en la Nube desde Cero en Cualquier PC
 
-Esta guía técnica está diseñada para que cualquier estudiante, docente o desarrollador pueda replicar y desplegar la plataforma completa desde su propia computadora sin costo alguno (**0.00 Bs**).
+Esta guía técnica está diseñada para que cualquier estudiante, docente o desarrollador pueda replicar y desplegar la plataforma completa desde su propia computadora sin costo alguno (**0.00 Bs / $0.00 USD**).
 
 ```text
-  +--------------------+         +--------------------+         +--------------------+
-  |  Cloudflare Pages  | <=====> |    Render Cloud    | <=====> |   Supabase Cloud   |
-  |  (React SPA Vite)  |  HTTPS  | (Flask API Python) |  HTTPS  |  (PostgreSQL + RLS)|
-  +--------------------+         +--------------------+         +--------------------+
+┌────────────────────────────────┐         ┌────────────────────────────────┐
+│        CLOUDFLARE PAGES        │         │          RENDER CLOUD          │
+│   (Frontend React 19 + Vite)   │ ──────> │    (Backend Python / Flask)    │
+│  • Edge CDN Global             │  HTTPS  │  • API REST + Blueprints       │
+│  • Enrutamiento SPA _redirects │         │  • OpenAPI / Swagger UI (/docs)│
+│  • < 105 KB Bundle gzip        │         │  • Gunicorn WSGI Server        │
+└────────────────────────────────┘         └────────────────────────────────┘
+               │                                           │
+               │                                           │
+               ▼                                           ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                              SUPABASE CLOUD                               │
+│                         (PostgreSQL Gestionado)                           │
+│  • Row Level Security (RLS) por usuario y rol                             │
+│  • Tablas: auth_qr_sesiones, tareas, productores, productos, pedidos      │
+│  • Supabase Realtime (WebSockets para login con Código QR móvil)          │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
-
-### 📋 Requisitos Previos en tu Computadora
-1. **Git:** Instalado en tu terminal ([git-scm.com](https://git-scm.com/)).
-2. **Node.js:** Versión 18 o superior ([nodejs.org](https://nodejs.org/)).
-3. **Python:** Versión 3.10 o superior ([python.org](https://www.python.org/)).
-4. **Cuentas Gratuitas:**
-   - GitHub: [github.com](https://github.com)
-   - Supabase: [supabase.com](https://supabase.com)
-   - Render: [render.com](https://render.com)
-   - Cloudflare: [cloudflare.com](https://cloudflare.com)
 
 ---
 
-### Paso 1: Clonar y Probar Localmente en tu PC
+### 📋 1. Requisitos Previos en tu Computadora
 
-Abre tu terminal (PowerShell o Bash) y clona el repositorio:
+Antes de comenzar, asegúrate de tener instalado el software básico en tu PC (Windows, macOS o Linux):
+
+1. **Git:** Para clonar y subir cambios ([Descargar Git](https://git-scm.com/)).
+2. **Node.js (v18 o superior):** Incluye el gestor `npm` ([Descargar Node.js](https://nodejs.org/)).
+3. **Python (v3.10 o superior):** Incluye `pip` y `venv` ([Descargar Python](https://www.python.org/)). Asegúrate de marcar la casilla *"Add Python to PATH"* durante la instalación.
+4. **Cuentas Gratuitas (sin tarjeta de crédito requerida):**
+   - [GitHub](https://github.com) — Alojamiento del código fuente.
+   - [Supabase](https://supabase.com) — Base de datos PostgreSQL con RLS.
+   - [Render](https://render.com) — Servidor web para el backend en Flask.
+   - [Cloudflare](https://dash.cloudflare.com) — Alojamiento CDN de alta velocidad para el frontend.
+
+---
+
+### 💻 2. Paso 1: Clonar el Repositorio y Validación Local en tu PC
+
+#### 2.1 Clonar el proyecto
+Abre tu terminal (PowerShell, CMD o Bash) y ejecuta:
 ```bash
 git clone https://github.com/ProgramWeb2AgroEcologica/Actividad-04-Despliegue-Metricas-y-Gobernanza.git
 cd Actividad-04-Despliegue-Metricas-y-Gobernanza
 ```
 
-#### 1.1 Configurar y Probar el Backend (Python):
+#### 2.2 Configurar y Probar el Backend (Python):
+Entra a la carpeta `backend`, crea un entorno virtual e instala los requerimientos:
 ```powershell
 cd backend
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
+```
+*(Si estás en macOS o Linux, activa el entorno con `source venv/bin/activate`)*.
+
+Ejecuta las pruebas unitarias automatizadas con Pytest:
+```powershell
 python -m pytest tests/test_api.py -v
 ```
-*Verifica que los 30 tests pasen exitosamente.*
+*Comprueba que los 30 tests pasen exitosamente (`30 passed in 0.32s`).*
 
-#### 1.2 Configurar y Probar el Frontend (Node.js):
-En una nueva terminal:
+#### 2.3 Configurar y Probar el Frontend (Node.js):
+Abre una segunda terminal en la raíz del proyecto y navega a `frontend`:
 ```powershell
 cd frontend
 npm install
 npm run build
 npm run dev
 ```
-*Abre tu navegador en `http://localhost:5173` para comprobar que la interfaz cargue.*
+*Abre tu navegador en `http://localhost:5173` y comprueba que la plataforma cargue y sea interactiva.*
 
 ---
 
-### Paso 2: Configurar la Base de Datos en Supabase
+### 🗄️ 3. Paso 2: Configurar la Base de Datos en Supabase
 
-1. Inicia sesión en [Supabase](https://supabase.com) y presiona **"New Project"**.
-2. Asigna un nombre al proyecto (ej. `ecoferia-db`) y una contraseña segura para la base de datos. Selecciona la región más cercana (ej. `South America (São Paulo)`).
-3. Una vez creado el proyecto, ve al menú lateral izquierdo y entra en **"SQL Editor"**.
-4. Haz clic en **"New Query"**, copia todo el contenido del archivo `backend/sql/01_schema_rls.sql` y pégalo en el editor. Presiona **"Run"**.
-   - Esto creará las tablas: `tareas`, `productores`, `productos` y `pedidos`.
-   - Configurará las políticas de seguridad **Row Level Security (RLS)** y los datos semilla iniciales.
-5. Haz clic en **"New Query"** nuevamente, copia el contenido del archivo `supabase_schema_qr_auth.sql` y presiona **"Run"**.
-   - Esto creará la tabla `auth_qr_sesiones` y la registrará en `supabase_realtime` para el login por código QR.
-6. Ve a **Project Settings -> API** y copia:
-   - **Project URL:** `https://<tu-id>.supabase.co`
-   - **anon public key:** Clave pública para lectura.
-   - **service_role secret:** Clave de administración para el backend.
-   - **JWT Secret:** Clave para firmar y verificar tokens JWT.
+Supabase nos brinda PostgreSQL gestionado con políticas de seguridad por fila (RLS) y WebSockets Realtime.
 
----
+1. **Crear Proyecto:** Inicia sesión en [Supabase Dashboard](https://supabase.com/dashboard) y haz clic en **"New Project"**.
+   - **Name:** `ecoferia-db` (o el nombre de tu preferencia).
+   - **Database Password:** Genera una clave segura y guárdala.
+   - **Region:** Selecciona `South America (São Paulo)` para menor latencia.
+   - Presiona **"Create new project"** y espera 1 a 2 minutos.
 
-### Paso 3: Desplegar el Backend Flask en Render
+2. **Ejecutar Script de Tablas y RLS:**
+   - En el menú lateral izquierdo de Supabase, entra a **"SQL Editor"**.
+   - Haz clic en **"New Query"**.
+   - Abre en tu PC el archivo `backend/sql/01_schema_rls.sql`, copia todo su contenido, pégalo en el editor y presiona **"Run"**.
+   - *Resultado:* Se crean las tablas `tareas`, `productores`, `productos`, `pedidos` y sus políticas RLS con datos iniciales.
 
-1. Entra a [Render](https://render.com) y conecta tu cuenta de GitHub.
-2. Haz clic en **"New +" -> "Web Service"**.
-3. Selecciona tu repositorio de GitHub `Actividad-04-Despliegue-Metricas-y-Gobernanza`.
-4. Completa la configuración del servicio:
-   - **Name:** `ecoferia-backend` (o el nombre que elijas).
-   - **Region:** Frankfurt u Oregon (Free Tier).
-   - **Branch:** `main`.
-   - **Root Directory:** `backend` *(muy importante para que encuentre requirements.txt)*.
-   - **Runtime:** `Python 3`.
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn "app:create_app()"`
-   - **Instance Type:** `Free`.
-5. En la sección **"Environment Variables"**, añade las siguientes variables:
-   - `FLASK_ENV` = `production`
-   - `SUPABASE_URL` = `https://<tu-id>.supabase.co`
-   - `SUPABASE_KEY` = `<tu-anon-key-de-supabase>`
-   - `SUPABASE_SECRET_KEY` = `<tu-service-role-key-de-supabase>`
-   - `SUPABASE_JWT_SECRET` = `<tu-jwt-secret-de-supabase>`
-   - `CORS_ORIGINS` = `*`
-6. Haz clic en **"Create Web Service"**.
-7. Espera unos 2-3 minutos mientras Render compila e inicia el servidor.
-8. Cuando el estado sea **"Live"**, copia tu URL pública (ej. `https://ecoferia-backend.onrender.com`).
-9. Verifica en tu navegador:
-   - `https://ecoferia-backend.onrender.com/api/salud` (Debe responder `{"estado": "ok"}`).
-   - `https://ecoferia-backend.onrender.com/api/docs` (Cargará la documentación interactiva Swagger UI).
+3. **Ejecutar Script de Autenticación QR:**
+   - Haz clic nuevamente en **"New Query"**.
+   - Abre el archivo `supabase_schema_qr_auth.sql` (en la raíz del proyecto), copia su contenido, pégalo en el editor y presiona **"Run"**.
+   - *Resultado:* Se crea la tabla `auth_qr_sesiones`, sus políticas RLS y se habilita en `supabase_realtime` para el login móvil con QR.
+
+4. **Obtener Credenciales de Conexión:**
+   - Ve a ⚙️ **Project Settings** (abajo a la izquierda) ➔ **API** (o **Data API**).
+   - Copia y guarda estos datos:
+     - **Project URL:** `https://xxxxxxxxxxxxxxxxxxxx.supabase.co`
+     - **anon / public key:** Clave pública para peticiones web.
+     - **service_role secret:** Clave administrativa del backend.
+     - **JWT Secret:** (En **Project Settings** ➔ **API** o **Authentication** ➔ **JWT Settings**).
 
 ---
 
-### Paso 4: Desplegar el Frontend React en Cloudflare Pages
+### ⚙️ 4. Paso 3: Desplegar el Backend Flask en Render
 
-1. Inicia sesión en [Cloudflare](https://dash.cloudflare.com) y ve a **Workers & Pages**.
-2. Haz clic en **"Create application" -> pestaña "Pages" -> "Connect to Git"**.
-3. Elige tu repositorio de GitHub `Actividad-04-Despliegue-Metricas-y-Gobernanza`.
-4. Configura los parámetros de compilación:
-   - **Project name:** `ecoferia-frontend`
-   - **Production branch:** `main`
-   - **Framework preset:** `Vite`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Root directory:** `frontend` *(muy importante para que compile en la carpeta correcta)*.
-5. En la sección **"Environment variables" (Producción)**, agrega:
-   - `VITE_API_URL` = `https://ecoferia-backend.onrender.com/api` *(la URL de tu backend en Render con el sufijo `/api`)*.
-6. Presiona **"Save and Deploy"**.
-7. Cloudflare Pages descargará las dependencias y construirá el sitio en menos de 1 minuto.
-8. Una vez finalizado, recibirás tu URL global de alta velocidad:
-   `https://ecoferia-frontend.pages.dev`
+Render albergará el servidor web Python con Gunicorn en modo WSGI.
 
-> **Nota sobre el Enrutamiento SPA:** El repositorio incluye el archivo `frontend/public/_redirects` con la regla `/* /index.html 200`. Esto garantiza que si recargas la página o abres un enlace con parámetros como `?qr_auth=...`, Cloudflare sirva la aplicación React sin errores 404.
+1. **Crear Servicio:** Ingresa a [Render Dashboard](https://dashboard.render.com/) y presiona **"New +" ➔ "Web Service"**.
+2. **Conectar Repositorio:** Selecciona *"Build and deploy from a Git repository"*, conecta tu GitHub y elige `Actividad-04-Despliegue-Metricas-y-Gobernanza`.
+3. **Parámetros del Servicio:**
 
----
+| Parámetro | Valor Requerido | Nota Técnica |
+| :--- | :--- | :--- |
+| **Name** | `ecoferia-backend` | Nombre de tu backend |
+| **Region** | `Frankfurt` u `Oregon` | Servidor Free Tier |
+| **Branch** | `main` | Rama principal del repositorio |
+| **Root Directory** | `backend` | **¡Crítico!** Le indica a Render dónde está `requirements.txt` |
+| **Runtime** | `Python 3` | Intérprete Python |
+| **Build Command** | `pip install -r requirements.txt` | Instala Flask, Smorest, PyJWT, Gunicorn |
+| **Start Command** | `gunicorn "app:create_app()"` | Inicia el servidor de producción WSGI |
+| **Instance Type** | `Free` | Plan gratuito permanente |
 
-### Paso 5: Verificación Final del Despliegue en la Nube
+4. **Variables de Entorno (Environment Variables):**  
+   Baja hasta la sección **"Environment Variables"** y añade las siguientes claves:
 
-Una vez completados los pasos anteriores, realiza este checklist de verificación:
+| Variable | Valor |
+| :--- | :--- |
+| `FLASK_ENV` | `production` |
+| `SUPABASE_URL` | `https://xxxxxxxxxxxxxxxxxxxx.supabase.co` *(tu Project URL de Supabase)* |
+| `SUPABASE_KEY` | *(tu anon public key de Supabase)* |
+| `SUPABASE_SECRET_KEY` | *(tu service_role secret de Supabase)* |
+| `SUPABASE_JWT_SECRET` | *(tu JWT Secret de Supabase o frase secreta de 64 caracteres)* |
+| `CORS_ORIGINS` | `*` |
 
-1. **Catálogo Público (CU-01):** Abre la URL de Cloudflare Pages. Debes ver las cosechas agroecológicas frescas.
-2. **Reserva Directa (CU-02):** Añade lechuga o tomates a la canasta y confirma un pedido con tus datos.
-3. **Selector Instantáneo RBAC:** En la barra superior, cambia entre Consumidor, Productor y Administrador en 0 ms.
-4. **Registro de Usuario (CU-01):** Abre el modal de Login, entra a "Registro", crea una nueva cuenta y verifica que accedas automáticamente.
-5. **Autenticación con Código QR:**
-   - En tu computadora, ve a la pestaña "QR Móvil".
-   - Escanea el código con tu celular (o haz clic en "Abrir Simulador Móvil").
-   - Autoriza con el botón biométrico.
-   - Observa cómo tu computadora inicia sesión de inmediato sin contraseñas.
-6. **Consola Limpia (F12):** Abre las herramientas de desarrollador (F12) y comprueba que no haya errores rojos ni advertencias al interactuar con la plataforma.
-
----
-
-### 🛠️ Solución de Problemas Frecuentes (FAQ)
-
-- **¿Por qué el backend tarda unos segundos en responder la primera vez?**  
-  En el plan gratuito de Render, las instancias entran en modo de suspensión tras 15 minutos sin tráfico. El primer arranque ("cold-start") puede demorar ~40 segundos. El frontend de EcoFeria está programado de forma resiliente para operar con almacenamiento local sin bloquear la pantalla mientras el backend despierta.
-- **¿Qué hago si sale un error de CORS al hacer peticiones?**  
-  Verifica que en `backend/app/config.py` o en las variables de entorno de Render, la variable `CORS_ORIGINS` contenga `*` o el dominio de Cloudflare Pages.
-- **¿Cómo actualizar la aplicación después de hacer cambios en el código?**  
-  Basta con hacer `git push origin main`. Tanto Render como Cloudflare Pages tienen integración continua (CI/CD) y se compilan automáticamente con cada commit.
+5. **Lanzar Despliegue:**
+   - Haz clic en **"Create Web Service"**.
+   - Espera ~2 minutos hasta que el log indique `Your service is live 🎉`.
+   - Copia tu URL pública de Render (ej. `https://ecoferia-backend.onrender.com`).
+6. **Comprobar Disponibilidad:**
+   - Abre en el navegador: `https://ecoferia-backend.onrender.com/api/salud`  
+     *(Debe devolver: `{"estado": "ok", "servicio": "EcoFeria Santa Cruz API", ...}`)*.
+   - Abre en el navegador: `https://ecoferia-backend.onrender.com/api/docs`  
+     *(Cargará la interfaz interactiva de Swagger UI con todos los endpoints)*.
 
 ---
 
-## 📄 Informe Oficial Académico
-- [Acceder a INFORME_ACTIVIDAD_04.html](./INFORME_ACTIVIDAD_04.html)
+### ⚡ 5. Paso 4: Desplegar el Frontend React en Cloudflare Pages
+
+Cloudflare Pages sirve la SPA React en su red de borde (Edge CDN) distribuida con latencia ultra-baja.
+
+1. **Crear Aplicación:** Inicia sesión en [Cloudflare Dashboard](https://dash.cloudflare.com/) ➔ entra a **"Workers & Pages"** ➔ pestaña **"Pages"** ➔ **"Connect to Git"**.
+2. **Seleccionar Repositorio:** Elige `Actividad-04-Despliegue-Metricas-y-Gobernanza` y haz clic en **"Begin setup"**.
+3. **Parámetros de Compilación (Build Settings):**
+
+| Parámetro | Valor Requerido | Nota Técnica |
+| :--- | :--- | :--- |
+| **Project name** | `ecoferia-frontend` | Subdominio asignado `.pages.dev` |
+| **Production branch** | `main` | Rama de despliegue continuo |
+| **Framework preset** | `Vite` | Preset preconfigurado para Vite |
+| **Build command** | `npm run build` | Compila React y genera la carpeta `dist` |
+| **Build output directory** | `dist` | Directorio con los activos finales |
+| **Root directory** | `frontend` | **¡Crítico!** Le indica a Cloudflare entrar a `frontend` |
+
+4. **Variable de Entorno del API en Cloudflare:**  
+   En la sección **"Environment variables (advanced)"**, agrega:
+   - **Variable:** `VITE_API_URL`
+   - **Valor:** `https://ecoferia-backend.onrender.com/api` *(la URL de tu backend en Render con sufijo `/api`)*.
+
+5. **Guardar y Desplegar:**
+   - Presiona **"Save and Deploy"**.
+   - Cloudflare compilará y publicará la web en menos de 60 segundos.
+   - Recibirás tu enlace de producción: `https://ecoferia-frontend.pages.dev`.
+
+> **💡 Regla de Redirección SPA:**  
+> El proyecto incluye el archivo `frontend/public/_redirects` con la regla `/* /index.html 200`. Esto permite que al recargar rutas profundas o enlaces con parámetros como `?qr_auth=...`, Cloudflare no muestre error 404, sino que entregue la aplicación React para resolver la ruta en el cliente.  
+> Además, los archivos `INFORME_ACTIVIDAD_04.html` e `informe.html` ubicados en `frontend/public/` son servidos directamente para lectura web.
+
+---
+
+### ✅ 6. Paso 5: Verificación Integral del Sistema en Producción
+
+Realiza esta auditoría para verificar el 100% de la funcionalidad:
+
+1. **Catálogo y Compra (CU-01 & CU-02):**  
+   Entra a tu dominio de Cloudflare Pages, agrega cosechas a la canasta, ingresa al checkout y genera una reserva con tu número telefónico.
+2. **Selector Rápido de Roles (RBAC 0 ms):**  
+   En la barra superior, cambia entre **Consumidor**, **Productor** y **Administrador**. Verifica que el Productor pueda gestionar cosechas mientras el Consumidor recibe bloqueo de edición.
+3. **Desafío Passwordless por Código QR:**  
+   - Abre el modal de inicio de sesión y selecciona **"QR Móvil"**.
+   - Escanea el código con tu celular o usa el botón *"Abrir Simulador Móvil"*.
+   - Autoriza con huella/biometría en el smartphone.
+   - Observa cómo tu computadora inicia sesión en menos de 1 segundo sin contraseñas.
+4. **Verificación de Informe HTML Renderizado:**  
+   Haz clic en el nuevo botón **"Informe HTML"** de la barra de navegación para comprobar que el informe se abra directamente como una página web formateada.
+5. **Consola Limpia (F12):**  
+   Presiona `F12` y comprueba que la consola no tenga errores rojos de red o de ejecución.
+
+---
+
+### 🛠️ 7. Resolución de Problemas Frecuentes (FAQ)
+
+- **¿Por qué Render tarda unos 40 segundos en la primera petición?**  
+  En el plan gratuito de Render, los servidores se suspenden tras 15 minutos de inactividad para ahorrar energía. La primera petición realiza el encendido en frío (*cold start*). El frontend de EcoFeria cuenta con mecanismos de respaldo local y reintentos automáticos para no congelar la pantalla.
+- **¿Qué hacer si aparece error de CORS en la consola?**  
+  Asegúrate de que en las variables de entorno de Render la variable `CORS_ORIGINS` tenga el valor `*` o la URL exacta de tu frontend en Cloudflare Pages (`https://ecoferia-frontend.pages.dev`).
+- **¿Cómo actualizar la aplicación al hacer cambios?**  
+  Solo haz `git push origin main`. Tanto Render como Cloudflare Pages tienen CI/CD integrado y compilarán las actualizaciones automáticamente.
+
+---
 
 *Desarrollado con rigor académico, sostenibilidad de software y estándares de seguridad web para la materia Programación Web II — UPDS (2026).*
